@@ -20,7 +20,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Wallet } from './entities/wallet.entity';
 import { WalletService } from './wallet.service';
 
-@Controller('wallet')
+@Controller('wallets')
 @UseGuards(AuthGuard('jwt'))
 @UseInterceptors(ClassSerializerInterceptor)
 export class WalletController {

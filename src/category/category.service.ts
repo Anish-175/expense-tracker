@@ -24,7 +24,6 @@ export class CategoryService {
     private userRepository: Repository<User>,
   ) {}
 
-
   // create a new category
   async create(
     createCategoryDto: CreateCategoryDto,
