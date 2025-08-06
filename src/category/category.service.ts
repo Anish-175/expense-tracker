@@ -112,7 +112,7 @@ export class CategoryService {
   }
 
   //returns a single categoru by id
-  async findOne(id: string, user: CurrentUserPayload): Promise<Category> {
+  async findOne(id: number, user: CurrentUserPayload): Promise<Category> {
     try {
       const category = await this.categoryRepository.findOne({
         where: { id },
@@ -145,7 +145,7 @@ export class CategoryService {
 
   //upadte a category by id
   async update(
-    id: string,
+    id: number,
     updateCategoryDto: UpdateCategoryDto,
     user: CurrentUserPayload,
   ): Promise<Category> {
@@ -207,7 +207,7 @@ export class CategoryService {
 
   //remove a category
   async remove(
-    id: string,
+    id: number,
     user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     try {

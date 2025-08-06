@@ -9,7 +9,7 @@ import {
   UseGuards,
   ClassSerializerInterceptor,
   UseInterceptors,
-  ParseUUIDPipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { CreateWalletDto } from './dto/create-wallet.dto';
@@ -39,7 +39,7 @@ export class WalletController {
   }
   @Get(':id')
   findOne(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', new ParseIntPipe()) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<Wallet> {
     return this.walletService.findOne(id, user);
@@ -47,7 +47,7 @@ export class WalletController {
 
   @Patch(':id')
   update(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', new ParseIntPipe()) id: number,
     @Body() updateWalletDto: UpdateWalletDto,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<Wallet> {
@@ -56,7 +56,7 @@ export class WalletController {
 
   @Delete(':id')
   remove(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', new ParseIntPipe()) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     return this.walletService.remove(id, user);

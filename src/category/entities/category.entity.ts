@@ -18,9 +18,9 @@ export enum CategoryType {
 @Index('IDX_category_name_user_id', ['name', 'user'], { unique: true })
 @Entity('categories')
 export class Category {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   @Expose()
-  id: string;
+  id: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @Exclude()

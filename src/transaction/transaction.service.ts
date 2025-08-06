@@ -90,7 +90,7 @@ export class TransactionService {
     }
   }
 
-  async findOne(id: string, user: CurrentUserPayload): Promise<Transaction> {
+  async findOne(id: number, user: CurrentUserPayload): Promise<Transaction> {
     try {
       const transaction = await this.transactionRepository.findOne({
         where: { id },
@@ -118,7 +118,7 @@ export class TransactionService {
   }
 
   async update(
-    id: string,
+    id: number,
     updateTransactionDto: UpdateTransactionDto,
     user: CurrentUserPayload,
   ): Promise<Transaction> {
@@ -170,7 +170,7 @@ export class TransactionService {
   }
 
   async remove(
-    id: string,
+    id: number,
     user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     try {

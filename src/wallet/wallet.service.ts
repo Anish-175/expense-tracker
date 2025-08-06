@@ -108,7 +108,7 @@ export class WalletService {
     }
   }
 
-  async findOne(id: string, user: CurrentUserPayload): Promise<Wallet> {
+  async findOne(id: number, user: CurrentUserPayload): Promise<Wallet> {
     try {
       const wallet = await this.walletRepository.findOne({
         where: { id },
@@ -137,7 +137,7 @@ export class WalletService {
   }
 
   async update(
-    id: string,
+    id: number,
     updateWalletDto: UpdateWalletDto,
     user: CurrentUserPayload,
   ): Promise<Wallet> {
@@ -199,7 +199,7 @@ export class WalletService {
 
   //remove a wallet
   async remove(
-    id: string,
+    id: number,
     user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     try {
@@ -225,7 +225,7 @@ export class WalletService {
 
 
   //default wallet
-  async createDefaultWallet(userId: string): Promise<Wallet> {
+  async createDefaultWallet(userId: number): Promise<Wallet> {
     const user = await this.userRepository.findOne({ where: { id: userId } , });
     if (!user) throw new NotFoundException('User not found');
 

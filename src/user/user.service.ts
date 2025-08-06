@@ -95,7 +95,7 @@ export class UserService {
   }
 
   // //Retrieve single user by id
-  // async findById(userId: string): Promise<UserResponseDto> {
+  // async findById(userId: number): Promise<UserResponseDto> {
   //   const user = await this.userRepository.findOne({
   //      where: { id: userId, deleted_at: IsNull() }
   //   });
@@ -108,7 +108,7 @@ export class UserService {
   // }
 
   //update user by id
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } }); // throws NotFoundException if not found
 
     if (!user) {
@@ -143,7 +143,7 @@ export class UserService {
   //delete a user
   // user.service.ts
 
-  async softDelete(userId: string): Promise<void> {
+  async softDelete(userId: number): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['categories'], // load related categories

@@ -1,5 +1,5 @@
 export interface CurrentUserPayload {
-  userId: string;
+  userId: number; // changed from string to number
   name: string;
   email: string;
 }

@@ -4,12 +4,12 @@ import {
   Post,
   Body,
   Patch,
-  Param,
+
   Delete,
   Request,
   UseGuards,
-  InternalServerErrorException,
-  ParseUUIDPipe,
+  
+
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto';

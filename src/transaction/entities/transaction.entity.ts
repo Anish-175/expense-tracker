@@ -26,9 +26,9 @@ export enum TransactionType {
 @Index('idx_wallet_id', ['walletId'])
 @Index('idx_category_id', ['categoryId'])
 export class Transaction {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   @Expose()
-  id: string;
+  id: number;
 
   @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
   @Exclude()
@@ -36,7 +36,7 @@ export class Transaction {
 
   @Column()
   @Expose()
-  userId: string;
+  userId: number;
 
   @ManyToOne(() => Wallet, { nullable: false, onDelete: 'RESTRICT' })
   @Exclude()
@@ -44,7 +44,7 @@ export class Transaction {
 
   @Column()
   @Expose()
-  walletId: string;
+  walletId: number;
 
   @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
   @Exclude()
@@ -52,7 +52,7 @@ export class Transaction {
 
   @Column({ nullable: true })
   @Expose()
-  categoryId?: string;
+  categoryId?: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   @Expose()

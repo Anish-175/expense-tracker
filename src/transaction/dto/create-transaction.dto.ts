@@ -1,5 +1,5 @@
 import {
-  IsUUID,
+  IsInt,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -9,14 +9,13 @@ import {
 import { TransactionType } from '../entities/transaction.entity';
 
 export class CreateTransactionDto {
-
-  @IsUUID()
+  @IsInt()
   @IsNotEmpty()
-  walletId: string;
+  walletId: number;
 
-  @IsUUID()
+  @IsInt()
   @IsOptional()
-  categoryId?: string;
+  categoryId?: number;
 
   @IsNumber()
   amount: number;

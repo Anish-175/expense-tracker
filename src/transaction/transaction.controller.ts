@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   ClassSerializerInterceptor,
   UseInterceptors,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -40,7 +41,7 @@ export class TransactionController {
 
   @Get(':id')
   findOne(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<Transaction> {
     return this.transactionService.findOne(id, user);
@@ -48,7 +49,7 @@ export class TransactionController {
 
   @Patch(':id')
   update(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateTransactionDto: UpdateTransactionDto,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<Transaction> {
@@ -57,7 +58,7 @@ export class TransactionController {
 
   @Delete(':id')
   remove(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     return this.transactionService.remove(id, user);

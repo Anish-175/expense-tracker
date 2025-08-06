@@ -7,8 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
-  ParseUUIDPipe,
+  ParseIntPipe,
   ClassSerializerInterceptor,
   UseInterceptors,
 } from '@nestjs/common';
@@ -41,7 +40,7 @@ export class CategoryController {
 
   @Get(':id')
   findOne(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', new ParseIntPipe()) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<Category> {
     return this.categoryService.findOne(id, user);
@@ -49,7 +48,7 @@ export class CategoryController {
 
   @Patch(':id')
   update(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', new ParseIntPipe()) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<Category> {
@@ -58,7 +57,7 @@ export class CategoryController {
 
   @Delete(':id')
   remove(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', new ParseIntPipe()) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     return this.categoryService.remove(id, user);
