@@ -6,15 +6,15 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { TransactionType } from '../entities/category.entity';
+import { CategoryType} from '../entities/category.entity';
 
 export class CreateCategoryDto {
   @IsString()
   @Length(1, 255)
   name: string;
 
-  @IsEnum(TransactionType)
-  type: TransactionType;
+  @IsEnum(CategoryType)
+  type: CategoryType;
 
   @IsString()
   @Length(7, 7)

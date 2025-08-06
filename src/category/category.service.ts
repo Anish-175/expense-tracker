@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
-import { Category, TransactionType } from './entities/category.entity';
+import { Category, CategoryType } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from '../user/entities/user.entity';
@@ -236,27 +236,27 @@ export class CategoryService {
       const defaultCategories: Partial<Category>[] = [
         {
           name: 'Food',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#FF0000',
         },
         {
           name: 'Rent',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#FFA500',
         },
         {
           name: 'Utilities',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#008000',
         },
         {
           name: 'Entertainment',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#0000FF',
         },
         {
           name: 'Salary',
-          type: TransactionType.INCOME,
+          type: CategoryType.INCOME,
           color: '#800080',
         },
       ];
