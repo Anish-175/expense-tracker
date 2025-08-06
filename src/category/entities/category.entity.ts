@@ -11,10 +11,9 @@ import {
   Index,
 } from 'typeorm';
 
-export enum TransactionType {
+export enum CategoryType {
   INCOME = 'income',
   EXPENSE = 'expense',
-  TRANSFER = 'transfer',
 }
 @Index('IDX_category_name_user_id', ['name', 'user'], { unique: true })
 @Entity('categories')
@@ -31,9 +30,9 @@ export class Category {
   @Expose()
   name: string;
 
-  @Column({ type: 'enum', enum: TransactionType })
+  @Column({ type: 'enum', enum: CategoryType })
   @Expose()
-  type: TransactionType;
+  type: CategoryType;
 
   @Column({ type: 'varchar', length: 7 })
   @Expose()
