@@ -21,7 +21,7 @@ export enum TransactionType {
 }
 
 @Entity('transactions')
-@Index('idx_transaction_date', ['transactionDate'])
+@Index('idx_date', ['Date'])
 @Index('idx_user_id', ['userId'])
 @Index('idx_wallet_id', ['walletId'])
 @Index('idx_category_id', ['categoryId'])

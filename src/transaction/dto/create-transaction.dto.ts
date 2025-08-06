@@ -9,9 +9,6 @@ import {
 import { TransactionType } from '../entities/transaction.entity';
 
 export class CreateTransactionDto {
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
 
   @IsUUID()
   @IsNotEmpty()
@@ -28,7 +25,7 @@ export class CreateTransactionDto {
   type: TransactionType;
 
   @IsNotEmpty()
-  transactionDate: Date;
+  Date: Date;
 
   @IsString()
   @IsOptional()
