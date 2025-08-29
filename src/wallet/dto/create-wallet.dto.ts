@@ -1,5 +1,12 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsNumber, Min, IsBoolean } from "class-validator";
-import { WalletType } from "../entities/wallet.entity";
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  Min,
+} from 'class-validator';
+import { WalletType } from '../entities/wallet.entity';
 
 export class CreateWalletDto {
   @IsString()
@@ -14,5 +21,4 @@ export class CreateWalletDto {
   @Min(0)
   @IsOptional()
   balance?: number = 0;
-
 }

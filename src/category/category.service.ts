@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
-import { Category, TransactionType } from './entities/category.entity';
+import { Category, CategoryType } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from '../user/entities/user.entity';
@@ -23,7 +23,6 @@ export class CategoryService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
-
 
   // create a new category
   async create(
@@ -113,7 +112,7 @@ export class CategoryService {
   }
 
   //returns a single categoru by id
-  async findOne(id: string, user: CurrentUserPayload): Promise<Category> {
+  async findOne(id: number, user: CurrentUserPayload): Promise<Category> {
     try {
       const category = await this.categoryRepository.findOne({
         where: { id },
@@ -146,7 +145,7 @@ export class CategoryService {
 
   //upadte a category by id
   async update(
-    id: string,
+    id: number,
     updateCategoryDto: UpdateCategoryDto,
     user: CurrentUserPayload,
   ): Promise<Category> {
@@ -208,7 +207,7 @@ export class CategoryService {
 
   //remove a category
   async remove(
-    id: string,
+    id: number,
     user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     try {
@@ -237,27 +236,27 @@ export class CategoryService {
       const defaultCategories: Partial<Category>[] = [
         {
           name: 'Food',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#FF0000',
         },
         {
           name: 'Rent',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#FFA500',
         },
         {
           name: 'Utilities',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#008000',
         },
         {
           name: 'Entertainment',
-          type: TransactionType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: '#0000FF',
         },
         {
           name: 'Salary',
-          type: TransactionType.INCOME,
+          type: CategoryType.INCOME,
           color: '#800080',
         },
       ];

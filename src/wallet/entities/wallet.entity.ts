@@ -21,9 +21,9 @@ export enum WalletType {
 @Entity('wallets')
 @Index('IDX_wallet_name_user_id', ['name', 'user'], { unique: true })
 export class Wallet {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   @Expose()
-  id: string;
+  id: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
   @Exclude()

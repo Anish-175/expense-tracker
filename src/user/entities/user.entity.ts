@@ -11,11 +11,10 @@ import {
   OneToMany,
 } from 'typeorm';
 
-
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid') //unique uuid
-  id: string;
+  @PrimaryGeneratedColumn() // changed from 'uuid'
+  id: number; // changed from string
 
   @Column({ type: 'varchar', length: 255 }) //user name
   @Expose()
@@ -50,8 +49,5 @@ export class User {
   wallet: Wallet[];
 }
 
-
-
 // relationships later
 // user.entity.ts
-

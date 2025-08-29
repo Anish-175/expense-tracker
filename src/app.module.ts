@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { WalletModule } from './wallet/wallet.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 
 @Module({
@@ -26,6 +27,7 @@ import { WalletModule } from './wallet/wallet.module';
     AuthModule,
     CategoryModule,
     WalletModule,
+    TransactionModule,
   ],
 })
 export class AppModule {}
