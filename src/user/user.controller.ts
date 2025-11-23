@@ -4,12 +4,10 @@ import {
   Post,
   Body,
   Patch,
-
   Delete,
   Request,
   UseGuards,
-  
-
+  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto';
@@ -23,8 +21,8 @@ export class UserController {
   //get user profile
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@CurrentUser() user: CurrentUserPayload) {
+    return this.userService.findById(user.userId);
   }
 
   // get all users
@@ -44,13 +42,10 @@ export class UserController {
   //update user by uuid
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
-  async update(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    await this.userService.update(user.userId, updateUserDto);
-    return 'user updated';
+  async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.update(+id, updateUserDto);
   }
+
   //soft delete by uuid
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))

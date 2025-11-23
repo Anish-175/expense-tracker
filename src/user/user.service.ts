@@ -95,21 +95,22 @@ export class UserService {
   }
 
   // //Retrieve single user by id
-  // async findById(userId: number): Promise<UserResponseDto> {
-  //   const user = await this.userRepository.findOne({
-  //      where: { id: userId, deleted_at: IsNull() }
-  //   });
-  //   if (!user) {
-  //     throw new NotFoundException(`User with id ${userId} not found`);
-  //   }
-  //   return plainToInstance(UserResponseDto, user, {
-  //     excludeExtraneousValues: true,
-  //   });
-  // }
+  async findById(userId: number): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({
+       where: { id: userId, deleted_at: IsNull() }
+    });
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found`);
+    }
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
+  }
 
   //update user by id
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } }); // throws NotFoundException if not found
+            console.log("Updating user with ID:", id);
 
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
