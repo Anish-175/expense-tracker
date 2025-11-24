@@ -15,9 +15,9 @@ import { Category } from 'src/category/entities/category.entity';
 import { Exclude, Expose } from 'class-transformer';
 
 export enum TransactionType {
-  EXPENSE = 'EXPENSE',
-  INCOME = 'INCOME',
-  TRANSFER = 'TRANSFER', // Comprehensive type from [1]
+  EXPENSE = 'expense',
+  INCOME = 'income',
+  TRANSFER = 'transfer',
 }
 
 @Entity('transactions')
