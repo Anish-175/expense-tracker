@@ -107,7 +107,7 @@ export class AnalyticsService {
   }
 
 
-  /* Monthly analytics [expenses, income] */
+  /* Monthly analytics [expenses, income, transactions, balance] */
 
   //monthly expenses
   async getExpensesThisMonth(userId: number): Promise<number> {
@@ -180,7 +180,20 @@ export class AnalyticsService {
     });
   }
 
-  //
+  //monthly overview
+  async getMonthlyOverview(userId: number): Promise<any> {
+    const income = await this.getIncomeThisMonth(userId);
+    const expenses = await this.getExpensesThisMonth(userId);
+    const netBalance = income - expenses;
+    const transactions = await this.getTransactionsThisMonth(userId);
+    return {
+      monthlyIncome:income,
+      monthlyExpense:expenses,
+      balance:netBalance,
+      transactionList:transactions,
+    };
+  }
+
 
   //   async getRemainingBalance(
   //     userId: number,

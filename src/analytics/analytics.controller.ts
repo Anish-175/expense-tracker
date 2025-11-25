@@ -56,25 +56,30 @@ export class AnalyticsController {
 
 
   /* monthly analytics endpoints */
+  @Get('monthly/overview')
+  async monthlyOverview(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getMonthlyOverview(user.userId);
+  }
+
   //monthly income
-  @Get('monthly/income')
-  async incomeThisMonth(@CurrentUser() user: CurrentUserPayload) {
-    return this.analyticsService.getIncomeThisMonth(user.userId);
-  }
+  // @Get('monthly/income')
+  // async incomeThisMonth(@CurrentUser() user: CurrentUserPayload) {
+  //   return this.analyticsService.getIncomeThisMonth(user.userId);
+  // }
 
-  //monthly expenses
-  @Get('monthly/expenses')
-  async expensesThisMonth(@CurrentUser() user: CurrentUserPayload) {
-    return this.analyticsService.getExpensesThisMonth(user.userId);
-  }
+  // //monthly expenses
+  // @Get('monthly/expenses')
+  // async expensesThisMonth(@CurrentUser() user: CurrentUserPayload) {
+  //   return this.analyticsService.getExpensesThisMonth(user.userId);
+  // }
 
-  @Get('monthly/transactions')
-  async monthlyTransactions(@CurrentUser() user: CurrentUserPayload) {
-    return this.analyticsService.getTransactionsThisMonth(user.userId);
-  }
+  // @Get('monthly/transactions')
+  // async monthlyTransactions(@CurrentUser() user: CurrentUserPayload) {
+  //   return this.analyticsService.getTransactionsThisMonth(user.userId);
+  // }
 
-  @Get('monthly/balance')
-  async monthlyBalance(@CurrentUser() user: CurrentUserPayload) {
-    return this.analyticsService.getNetBalanceThisMonth(user.userId);
-  }
+  // @Get('monthly/balance')
+  // async monthlyBalance(@CurrentUser() user: CurrentUserPayload) {
+  //   return this.analyticsService.getNetBalanceThisMonth(user.userId);
+  // }
 }
