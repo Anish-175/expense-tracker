@@ -20,44 +20,61 @@ import { AnalyticsService } from 'src/analytics/analytics.service';
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
-  @Get('overall/net-balance')
+  @Get('overall/remaining-balance')
   async overallNetBalance(@CurrentUser() user: CurrentUserPayload) {
-    return this.analyticsService.getOverallNetBalance(user.userId);
+    return this.analyticsService.getOverallRemainingBalance(user.userId);
   }
 
-  @Get('wallet/:walletId/expenses')
-  async totalExpenses(
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    return this.analyticsService.getTotalExpenses(user.userId, walletId);
+  @Get('wallets/overview')
+  async walletsOverview(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.walletOverview(user.userId);
   }
 
-  @Get('wallet/:walletId/income')
-  async totalIncome(
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    return this.analyticsService.getTotalIncome(user.userId, walletId);
-  }
+  // @Get('wallet/:walletId/expenses')
+  // async totalExpenses(
+  //   @Param('walletId', ParseIntPipe) walletId: number,
+  //   @CurrentUser() user: CurrentUserPayload,
+  // ) {
+  //   return this.analyticsService.getTotalExpenses(user.userId, walletId);
+  // }
 
-  @Get('wallet/:walletId/net-balance')
-  async netBalance(
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    return this.analyticsService.getNetBalance(user.userId, walletId);
-  }
+  // @Get('wallet/:walletId/income')
+  // async totalIncome(
+  //   @Param('walletId', ParseIntPipe) walletId: number,
+  //   @CurrentUser() user: CurrentUserPayload,
+  // ) {
+  //   return this.analyticsService.getTotalIncome(user.userId, walletId);
+  // }
 
+  // @Get('wallet/:walletId/remaining-balance')
+  // async netBalance(
+  //   @Param('walletId', ParseIntPipe) walletId: number,
+  //   @CurrentUser() user: CurrentUserPayload,
+  // ) {
+  //   return this.analyticsService.getRemainingBalance(user.userId, walletId);
+  // }
+
+
+  /* monthly analytics endpoints */
   //monthly income
-  @Get('overall/monthly/income')
+  @Get('monthly/income')
   async incomeThisMonth(@CurrentUser() user: CurrentUserPayload) {
     return this.analyticsService.getIncomeThisMonth(user.userId);
   }
 
   //monthly expenses
-  @Get('overall/monthly/expenses')
+  @Get('monthly/expenses')
   async expensesThisMonth(@CurrentUser() user: CurrentUserPayload) {
     return this.analyticsService.getExpensesThisMonth(user.userId);
+  }
+
+  @Get('monthly/transactions')
+  async monthlyTransactions(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getTransactionsThisMonth(user.userId);
+  }
+
+  @Get('monthly/balance')
+  async monthlyBalance(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getNetBalanceThisMonth(user.userId);
   }
 }

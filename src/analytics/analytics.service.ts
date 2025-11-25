@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Transaction } from '../transaction/entities/transaction.entity'; // Adjust path
 import { Wallet } from '../wallet/entities/wallet.entity';
 import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
@@ -13,6 +13,9 @@ export class AnalyticsService {
     @InjectRepository(Wallet)
     private walletRepo: Repository<Wallet>,
   ) {}
+
+
+  /* Basic calculations for wallet [Expense, Income and remaining balance] */
 
   // Calculate total expenses for a user in a specific wallet
   async getTotalExpenses(userId: number, walletId: number): Promise<number> {
@@ -39,7 +42,7 @@ export class AnalyticsService {
   }
 
   // Calculate net balance (income - expenses) for a user in a specific wallet
-  async getNetBalance(userId: number, walletId: number): Promise<number> {
+  async getRemainingBalance(userId: number, walletId: number): Promise<number> {
     const totalIncome = await this.getTotalIncome(userId, walletId);
     const totalExpenses = await this.getTotalExpenses(userId, walletId);
     const wallet = await this.walletRepo.findOne({
@@ -54,8 +57,34 @@ export class AnalyticsService {
     return initialBalance + (totalIncome - totalExpenses);
   }
 
-  // calculate net balance for a user across all wallets
-  async getOverallNetBalance(userId: number): Promise<number> {
+  /* Wallet Overview */
+  async walletOverview(userId: number): Promise<any> {
+    const wallets = await this.walletRepo.find({
+      where: { user: { id: userId } },
+      select: ['id', 'name', 'balance'],
+    });
+
+    const overview = await Promise.all(
+      wallets.map(async (wallet) => {
+        const totalIncome = await this.getTotalIncome(userId, wallet.id);
+        const totalExpenses = await this.getTotalExpenses(userId, wallet.id);
+        const netBalance = await this.getRemainingBalance(userId, wallet.id);
+
+        return {
+          id: wallet.id,
+          name: wallet.name,
+          initialBalance: wallet.balance,
+          totalIncome: totalIncome,
+          totalExpenses: totalExpenses,
+          currentBalance: netBalance,
+        };
+      }),
+    );
+    return overview;
+  }
+
+ /* Overall analytics [total balance across all wallets] */
+  async getOverallRemainingBalance(userId: number): Promise<number> {
     const wallets = await this.walletRepo.find({
       where: { user: { id: userId } },
       select: ['id'],
@@ -67,7 +96,7 @@ export class AnalyticsService {
 
     //sum net balances of all wallets
     const balancePromises = wallets.map((wallet) =>
-      this.getNetBalance(userId, wallet.id),
+      this.getRemainingBalance(userId, wallet.id),
     );
 
     const balances = await Promise.all(balancePromises);
@@ -77,7 +106,10 @@ export class AnalyticsService {
     return total;
   }
 
-  //monthly expenses and income for user
+
+  /* Monthly analytics [expenses, income] */
+
+  //monthly expenses
   async getExpensesThisMonth(userId: number): Promise<number> {
     const now = new Date();
     const firstDay = new Date(
@@ -100,6 +132,7 @@ export class AnalyticsService {
     return parseFloat(result?.total) || 0;
   }
 
+  //monthly income
   async getIncomeThisMonth(userId: number): Promise<number> {
     const now = new Date();
     const firstDay = new Date(
@@ -122,8 +155,33 @@ export class AnalyticsService {
     return parseFloat(result?.total) || 0;
   }
 
+  //monthly net balance
+  async getNetBalanceThisMonth(userId: number): Promise<number> {
+    const totalIncome = await this.getIncomeThisMonth(userId);
+    const totalExpenses = await this.getExpensesThisMonth(userId); 
+    return totalIncome - totalExpenses;
+  }
 
-  
+  //get list of transactions this month
+  async getTransactionsThisMonth(userId: number): Promise<Transaction[]> {
+    const now = new Date();
+    const firstDay = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const lastDay = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
+    return this.transactionRepo.find({
+      where: {
+        userId: userId,
+        Date: Between(firstDay, lastDay),
+      },
+      order: { Date: 'DESC' },
+    });
+  }
+
+  //
+
   //   async getRemainingBalance(
   //     userId: number,
   //     walletId?: number,
