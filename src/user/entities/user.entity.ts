@@ -49,5 +49,4 @@ export class User {
   wallet: Wallet[];
 }
 
-// relationships later
 // user.entity.ts

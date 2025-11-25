@@ -1,13 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction } from '../transaction/entities/transaction.entity'; // Adjust path
 import { Wallet } from '../wallet/entities/wallet.entity';
-
-export enum TransactionType {
-  INCOME = 'income',
-  EXPENSE = 'expense',
-}
+import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 
 @Injectable()
 export class AnalyticsService {
@@ -18,7 +14,7 @@ export class AnalyticsService {
     private walletRepo: Repository<Wallet>,
   ) {}
 
-  // Helper: Get current user from auth (we'll pass userId from controller)
+  // Calculate total expenses for a user in a specific wallet
   async getTotalExpenses(userId: number, walletId: number): Promise<number> {
     const result = await this.transactionRepo
       .createQueryBuilder('transaction')
@@ -30,6 +26,7 @@ export class AnalyticsService {
     return parseFloat(result?.total) || 0;
   }
 
+  // Calculate total income for a user in a specific wallet
   async getTotalIncome(userId: number, walletId: number): Promise<number> {
     const result = await this.transactionRepo
       .createQueryBuilder('transaction')
@@ -41,24 +38,92 @@ export class AnalyticsService {
     return parseFloat(result?.total) || 0;
   }
 
-  //   async getExpensesThisMonth(userId: number): Promise<number> {
-  //     const now = new Date();
-  //     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  //     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  // Calculate net balance (income - expenses) for a user in a specific wallet
+  async getNetBalance(userId: number, walletId: number): Promise<number> {
+    const totalIncome = await this.getTotalIncome(userId, walletId);
+    const totalExpenses = await this.getTotalExpenses(userId, walletId);
+    const wallet = await this.walletRepo.findOne({
+      where: { id: walletId, user: { id: userId } },
+    });
 
-  //     const result = await this.transactionRepo
-  //       .createQueryBuilder('transaction')
-  //       .select('SUM(transaction.amount)', 'total')
-  //       .where('transaction.userId = :userId', { userId })
-  //       .andWhere('transaction.type = :type', { type: TransactionType.EXPENSE })
-  //       .andWhere('transaction.Date BETWEEN :start AND :end', {
-  //         start: firstDay,
-  //         end: lastDay,
-  //       })
-  //       .getRawOne();
-  //     return parseFloat(result?.total) || 0;
-  //   }
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found');
+    }
 
+    const initialBalance = Number(wallet.balance) || 0;
+    return initialBalance + (totalIncome - totalExpenses);
+  }
+
+  // calculate net balance for a user across all wallets
+  async getOverallNetBalance(userId: number): Promise<number> {
+    const wallets = await this.walletRepo.find({
+      where: { user: { id: userId } },
+      select: ['id'],
+    });
+
+    if (wallets.length === 0) {
+      throw new NotFoundException('No wallets found for user');
+    }
+
+    //sum net balances of all wallets
+    const balancePromises = wallets.map((wallet) =>
+      this.getNetBalance(userId, wallet.id),
+    );
+
+    const balances = await Promise.all(balancePromises);
+
+    const total = balances.reduce((sum, val) => sum + val, 0);
+
+    return total;
+  }
+
+  //monthly expenses and income for user
+  async getExpensesThisMonth(userId: number): Promise<number> {
+    const now = new Date();
+    const firstDay = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const lastDay = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
+
+    const result = await this.transactionRepo
+      .createQueryBuilder('transaction')
+      .select('SUM(transaction.amount)', 'total')
+      .where('transaction.userId = :userId', { userId })
+      .andWhere('transaction.type = :type', { type: TransactionType.EXPENSE })
+      .andWhere('transaction.Date BETWEEN :start AND :end', {
+        start: firstDay,
+        end: lastDay,
+      })
+      .getRawOne();
+    return parseFloat(result?.total) || 0;
+  }
+
+  async getIncomeThisMonth(userId: number): Promise<number> {
+    const now = new Date();
+    const firstDay = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const lastDay = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
+
+    const result = await this.transactionRepo
+      .createQueryBuilder('transaction')
+      .select('SUM(transaction.amount)', 'total')
+      .where('transaction.userId = :userId', { userId })
+      .andWhere('transaction.type = :type', { type: TransactionType.INCOME })
+      .andWhere('transaction.Date BETWEEN :start AND :end', {
+        start: firstDay,
+        end: lastDay,
+      })
+      .getRawOne();
+    return parseFloat(result?.total) || 0;
+  }
+
+
+  
   //   async getRemainingBalance(
   //     userId: number,
   //     walletId?: number,

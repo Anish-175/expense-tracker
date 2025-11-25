@@ -20,7 +20,12 @@ import { AnalyticsService } from 'src/analytics/analytics.service';
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
-  @Get(':walletId/expenses')
+  @Get('overall/net-balance')
+  async overallNetBalance(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getOverallNetBalance(user.userId);
+  }
+
+  @Get('wallet/:walletId/expenses')
   async totalExpenses(
     @Param('walletId', ParseIntPipe) walletId: number,
     @CurrentUser() user: CurrentUserPayload,
@@ -28,11 +33,31 @@ export class AnalyticsController {
     return this.analyticsService.getTotalExpenses(user.userId, walletId);
   }
 
-  @Get(':walletId/income')
+  @Get('wallet/:walletId/income')
   async totalIncome(
     @Param('walletId', ParseIntPipe) walletId: number,
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.analyticsService.getTotalIncome(user.userId, walletId);
+  }
+
+  @Get('wallet/:walletId/net-balance')
+  async netBalance(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.analyticsService.getNetBalance(user.userId, walletId);
+  }
+
+  //monthly income
+  @Get('overall/monthly/income')
+  async incomeThisMonth(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getIncomeThisMonth(user.userId);
+  }
+
+  //monthly expenses
+  @Get('overall/monthly/expenses')
+  async expensesThisMonth(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getExpensesThisMonth(user.userId);
   }
 }
