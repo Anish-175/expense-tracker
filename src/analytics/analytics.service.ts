@@ -4,6 +4,7 @@ import { Between, Repository } from 'typeorm';
 import { Transaction } from '../transaction/entities/transaction.entity'; // Adjust path
 import { Wallet } from '../wallet/entities/wallet.entity';
 import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
+import { DateRange } from './utils/date-helpers';
 
 @Injectable()
 export class AnalyticsService {
@@ -12,7 +13,7 @@ export class AnalyticsService {
     private transactionRepo: Repository<Transaction>,
     @InjectRepository(Wallet)
     private walletRepo: Repository<Wallet>,
-  ) {}
+  ) { }
 
 
   /* Basic calculations for wallet [Expense, Income and remaining balance] */
@@ -83,7 +84,7 @@ export class AnalyticsService {
     return overview;
   }
 
- /* Overall analytics [total balance across all wallets] */
+  /* Overall analytics [total balance across all wallets] */
   async getOverallRemainingBalance(userId: number): Promise<number> {
     const wallets = await this.walletRepo.find({
       where: { user: { id: userId } },
@@ -109,91 +110,103 @@ export class AnalyticsService {
 
   /* Monthly analytics [expenses, income, transactions, balance] */
 
-  //monthly expenses
-  async getExpensesThisMonth(userId: number): Promise<number> {
-    const now = new Date();
-    const firstDay = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
-    );
-    const lastDay = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
-    );
+  async getMonthlyOverview(userId: number): Promise<any> {
+    const { start, end } = DateRange.thisMonth();
 
-    const result = await this.transactionRepo
-      .createQueryBuilder('transaction')
-      .select('SUM(transaction.amount)', 'total')
-      .where('transaction.userId = :userId', { userId })
-      .andWhere('transaction.type = :type', { type: TransactionType.EXPENSE })
-      .andWhere('transaction.Date BETWEEN :start AND :end', {
-        start: firstDay,
-        end: lastDay,
-      })
-      .getRawOne();
-    return parseFloat(result?.total) || 0;
-  }
-
-  //monthly income
-  async getIncomeThisMonth(userId: number): Promise<number> {
-    const now = new Date();
-    const firstDay = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
-    );
-    const lastDay = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
-    );
-
-    const result = await this.transactionRepo
+    //income this month
+    const income = await this.transactionRepo
       .createQueryBuilder('transaction')
       .select('SUM(transaction.amount)', 'total')
       .where('transaction.userId = :userId', { userId })
       .andWhere('transaction.type = :type', { type: TransactionType.INCOME })
       .andWhere('transaction.Date BETWEEN :start AND :end', {
-        start: firstDay,
-        end: lastDay,
+        start: start,
+        end: end,
       })
       .getRawOne();
-    return parseFloat(result?.total) || 0;
-  }
+    const monthlyIncome = parseFloat(income?.total) || 0;
 
-  //monthly net balance
-  async getNetBalanceThisMonth(userId: number): Promise<number> {
-    const totalIncome = await this.getIncomeThisMonth(userId);
-    const totalExpenses = await this.getExpensesThisMonth(userId); 
-    return totalIncome - totalExpenses;
-  }
+    //expenses this month
+    const expenses = await this.transactionRepo
+      .createQueryBuilder('transaction')
+      .select('SUM(transaction.amount)', 'total')
+      .where('transaction.userId = :userId', { userId })
+      .andWhere('transaction.type = :type', { type: TransactionType.EXPENSE })
+      .andWhere('transaction.Date BETWEEN :start AND :end', {
+        start: start,
+        end: end,
+      })
+      .getRawOne();
+    const monthlyExpenses = parseFloat(expenses?.total) || 0;
 
-  //get list of transactions this month
-  async getTransactionsThisMonth(userId: number): Promise<Transaction[]> {
-    const now = new Date();
-    const firstDay = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
-    );
-    const lastDay = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
-    );
-    return this.transactionRepo.find({
+    //net balance this month
+    const netBalance = monthlyIncome - monthlyExpenses;
+
+    //monthly transactions
+    const transactions = await this.transactionRepo.find({
       where: {
         userId: userId,
-        Date: Between(firstDay, lastDay),
+        Date: Between(start, end),
       },
       order: { Date: 'DESC' },
     });
-  }
-
-  //monthly overview
-  async getMonthlyOverview(userId: number): Promise<any> {
-    const income = await this.getIncomeThisMonth(userId);
-    const expenses = await this.getExpensesThisMonth(userId);
-    const netBalance = income - expenses;
-    const transactions = await this.getTransactionsThisMonth(userId);
+    
     return {
-      monthlyIncome:income,
-      monthlyExpense:expenses,
-      balance:netBalance,
-      transactionList:transactions,
+      date: start.toISOString().split('T')[0],
+      monthlyIncome: monthlyIncome,
+      monthlyExpenses: monthlyExpenses,
+      netBalance: netBalance,
+      transactions: transactions,
+
+    }
+  }
+  
+
+  /* daily analytics */
+  async getDailyOverview(userId: number): Promise<any> {
+ const { start, end } = DateRange.today()
+    const expensesResult = await this.transactionRepo
+      .createQueryBuilder('transaction')
+      .select('SUM(transaction.amount)', 'total')
+      .where('transaction.userId = :userId', { userId })
+      .andWhere('transaction.type = :type', { type: TransactionType.EXPENSE })
+      .andWhere('transaction.Date BETWEEN :start AND :end', {   
+        start: start,
+        end: end,
+      })
+      .getRawOne();
+    const dailyExpenses = parseFloat(expensesResult?.total) || 0; 
+  
+    const incomeResult = await this.transactionRepo
+      .createQueryBuilder('transaction')
+      .select('SUM(transaction.amount)', 'total')
+      .where('transaction.userId = :userId', { userId })
+      .andWhere('transaction.type = :type', { type: TransactionType.INCOME })
+      .andWhere('transaction.Date BETWEEN :start AND :end', {   
+        start: start,
+        end: end,
+      })
+      .getRawOne();
+    const dailyIncome = parseFloat(incomeResult?.total) || 0;   
+
+    const netBalance = dailyIncome - dailyExpenses;
+
+    const transactions = await this.transactionRepo.find({
+      where: {
+        userId: userId,
+        Date: Between(start, end),
+      },
+      order: { Date: 'DESC' },
+    });
+
+    return {
+      date: start.toISOString().split('T')[0],
+      dailyIncome: dailyIncome,
+      dailyExpenses: dailyExpenses,
+      netBalance: netBalance,
+      transactions: transactions,
     };
   }
-
 
   //   async getRemainingBalance(
   //     userId: number,

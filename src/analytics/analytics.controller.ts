@@ -82,4 +82,11 @@ export class AnalyticsController {
   // async monthlyBalance(@CurrentUser() user: CurrentUserPayload) {
   //   return this.analyticsService.getNetBalanceThisMonth(user.userId);
   // }
+
+
+  //daily expenses
+  @Get('daily/overview')
+  async dailyExpenses(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getDailyOverview(user.userId);
+  }
 }
