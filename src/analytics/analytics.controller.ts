@@ -30,29 +30,29 @@ export class AnalyticsController {
     return this.analyticsService.walletOverview(user.userId);
   }
 
-  // @Get('wallet/:walletId/expenses')
-  // async totalExpenses(
-  //   @Param('walletId', ParseIntPipe) walletId: number,
-  //   @CurrentUser() user: CurrentUserPayload,
-  // ) {
-  //   return this.analyticsService.getTotalExpenses(user.userId, walletId);
-  // }
+  @Get('wallets/:walletId/expenses')
+  async totalExpenses(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.analyticsService.getTotalExpenses(user.userId, walletId);
+  }
 
-  // @Get('wallet/:walletId/income')
-  // async totalIncome(
-  //   @Param('walletId', ParseIntPipe) walletId: number,
-  //   @CurrentUser() user: CurrentUserPayload,
-  // ) {
-  //   return this.analyticsService.getTotalIncome(user.userId, walletId);
-  // }
+  @Get('wallet/:walletId/income')
+  async totalIncome(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.analyticsService.getTotalIncome(user.userId, walletId);
+  }
 
-  // @Get('wallet/:walletId/remaining-balance')
-  // async netBalance(
-  //   @Param('walletId', ParseIntPipe) walletId: number,
-  //   @CurrentUser() user: CurrentUserPayload,
-  // ) {
-  //   return this.analyticsService.getRemainingBalance(user.userId, walletId);
-  // }
+  @Get('wallet/:walletId/remaining-balance')
+  async netBalance(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.analyticsService.getRemainingBalance(user.userId, walletId);
+  }
 
 
   /* monthly analytics endpoints */
@@ -88,5 +88,10 @@ export class AnalyticsController {
   @Get('daily/overview')
   async dailyExpenses(@CurrentUser() user: CurrentUserPayload) {
     return this.analyticsService.getDailyOverview(user.userId);
+  }
+
+  @Get('weekly/overview')
+  async weeklyExpenses(@CurrentUser() user: CurrentUserPayload) {
+    return this.analyticsService.getWeeklyOverview(user.userId);
   }
 }
