@@ -21,7 +21,7 @@ export enum TransactionType {
 }
 
 @Entity('transactions')
-@Index('idx_date', ['Date'])
+@Index('idx_date', ['date'])
 @Index('idx_user_id', ['userId'])
 @Index('idx_wallet_id', ['walletId'])
 @Index('idx_category_id', ['categoryId'])
@@ -64,7 +64,7 @@ export class Transaction {
 
   @Column({ type: 'timestamptz', nullable: false })
   @Expose()
-  Date: Date;
+  date: Date;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   @Expose()

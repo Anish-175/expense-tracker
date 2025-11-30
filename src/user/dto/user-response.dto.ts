@@ -17,5 +17,4 @@ export class UserResponseDto {
   @Expose()
   updated_at: Date;
 
-  // Don't expose password, deleted_at, etc.
 }

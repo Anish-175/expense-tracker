@@ -39,7 +39,7 @@ export class Wallet {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   @Expose()
-  balance: number;
+  initial_balance: number;
 
   @Column({ type: 'boolean', default: false })
   @Expose()

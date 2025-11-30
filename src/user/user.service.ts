@@ -45,7 +45,7 @@ export class UserService {
   }
 
   //Creates a user and saves to database
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     try {
       const hashedPassword = await this.hashPassword(createUserDto.password);
       const user = this.userRepository.create({
@@ -108,7 +108,7 @@ export class UserService {
   }
 
   //update user by id
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({ where: { id } }); // throws NotFoundException if not found
             console.log("Updating user with ID:", id);
 

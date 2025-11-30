@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Delete,
@@ -31,13 +30,6 @@ export class UserController {
   findAll(@Request() req) {
     return this.userService.findAll(req.user); //get only the authenticated user
   }
-
-  // //get user by uuid
-  // @Get(':id')
-  // @UseGuards(AuthGuard('jwt'))
-  // findById(@CurrentUser() user: CurrentUserPayload) {
-  //   return this.userService.findById(user.userId);
-  // }
 
   //update user by uuid
   @Patch(':id')

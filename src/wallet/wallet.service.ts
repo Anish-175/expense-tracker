@@ -232,7 +232,7 @@ export class WalletService {
     const wallet = this.walletRepository.create({
       name: 'Default Wallet',
       type: WalletType.WALLET,
-      balance: 0,
+      initial_balance: 0,
       is_default: true,
       user,
     });

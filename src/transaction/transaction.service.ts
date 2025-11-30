@@ -76,7 +76,7 @@ export class TransactionService {
     try {
       return await this.transactionRepository.find({
         where: { userId: user.userId },
-        order: { Date: 'DESC' },
+        order: { date: 'DESC' },
       });
     } catch (error) {
       console.error('Error in TransactionService.findAll:', {
