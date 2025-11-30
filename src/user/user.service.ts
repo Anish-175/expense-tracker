@@ -15,6 +15,7 @@ import { Category } from 'src/category/entities/category.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { WalletService } from 'src/wallet/wallet.service';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 
 @Injectable()
 export class UserService {
@@ -25,6 +26,8 @@ export class UserService {
     private categoryRepository: Repository<Category>,
     @InjectRepository(Wallet)
     private walletRepository: Repository<Wallet>,
+    @InjectRepository(Transaction)
+    private transactionRepository: Repository<Transaction>,
     //instantiates the Repository from typeORM
     private categoryService: CategoryService,
     private walletService: WalletService,
@@ -66,38 +69,11 @@ export class UserService {
       throw error;
     }
   }
-  //Finds and returns all users
-  async findAll(user: CurrentUserPayload): Promise<UserResponseDto[]> {
-    let users: User[];
 
-    if (user.email === 'admin@gmail.com') {
-      //hardcoded for testing purpose in postman
-      // Admin gets all users
-      users = await this.userRepository.find({
-        where: { deleted_at: IsNull() },
-      });
-    } else {
-      // Normal user gets only their own data
-      const singleUser = await this.userRepository.findOne({
-        where: { id: user.userId, deleted_at: IsNull() },
-      });
-
-      if (!singleUser) {
-        throw new NotFoundException(`User not found`);
-      }
-
-      users = [singleUser]; // wrap in array to match return type
-    }
-
-    return plainToInstance(UserResponseDto, users, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  // //Retrieve single user by id
+  //find user by id
   async findById(userId: number): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({
-       where: { id: userId, deleted_at: IsNull() }
+      where: { id: userId, deleted_at: IsNull() },
     });
     if (!user) {
       throw new NotFoundException(`User with id ${userId} not found`);
@@ -108,9 +84,12 @@ export class UserService {
   }
 
   //update user by id
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({ where: { id } }); // throws NotFoundException if not found
-            console.log("Updating user with ID:", id);
+    console.log('Updating user with ID:', id);
 
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
@@ -137,17 +116,16 @@ export class UserService {
       const hashedPassword = await this.hashPassword(updateUserDto.password);
       user.password = hashedPassword;
     }
-
-    return this.userRepository.save(user);
+    await this.userRepository.update(id, user);
+    return this.findById(id);
   }
 
-  //delete a user
-  // user.service.ts
+  //delete logged in user by id
 
   async softDelete(userId: number): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['categories'], // load related categories
+      relations: ['categories','wallet','transactions'], // load related categories
     });
 
     if (!user) {
@@ -157,6 +135,7 @@ export class UserService {
     // Soft delete related categories and wallets first
     await this.categoryRepository.softDelete({ user: { id: userId } });
     await this.walletRepository.softDelete({ user: { id: userId } });
+    await this.transactionRepository.softDelete({ user: { id: userId } });
 
     // Then soft delete the user
     await this.userRepository.softDelete(userId);

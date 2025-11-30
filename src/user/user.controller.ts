@@ -4,9 +4,7 @@ import {
   Body,
   Patch,
   Delete,
-  Request,
   UseGuards,
-  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto';
@@ -20,26 +18,19 @@ export class UserController {
   //get user profile
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
-  getProfile(@CurrentUser() user: CurrentUserPayload) {
-    return this.userService.findById(user.userId);
-  }
-
-  // get all users
-  @Get()
-  @UseGuards(AuthGuard('jwt'))
-  findAll(@Request() req) {
-    return this.userService.findAll(req.user); //get only the authenticated user
+  async getProfile(@CurrentUser() user: CurrentUserPayload) {
+    return await this.userService.findById(user.userId);
   }
 
   //update user by uuid
-  @Patch(':id')
+  @Patch()
   @UseGuards(AuthGuard('jwt'))
-  async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return await this.userService.update(+id, updateUserDto);
+  async update(@CurrentUser() user:CurrentUserPayload, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.update(user.userId, updateUserDto);
   }
 
   //soft delete by uuid
-  @Delete(':id')
+  @Delete()
   @UseGuards(AuthGuard('jwt'))
   async deleteUser(
     @CurrentUser() user: CurrentUserPayload,

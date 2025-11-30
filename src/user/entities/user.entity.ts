@@ -1,5 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
 import { Category } from 'src/category/entities/category.entity';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import {
   Entity,
@@ -39,6 +40,9 @@ export class User {
 
   @OneToMany(() => Wallet, (wallet) => wallet.user)
   wallet: Wallet[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.user)
+  transactions: Transaction[];
 }
 
 // user.entity.ts
