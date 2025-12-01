@@ -25,9 +25,14 @@ export class Wallet {
   @Expose()
   id: number;
 
+  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: false })
+  @Exclude()
+  user?: User;
+
   @Column()
   @Expose()
   userId: number;
+
 
   @Column({ type: 'varchar', length: 255 })
   @Expose()
@@ -56,8 +61,4 @@ export class Wallet {
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   @Exclude()
   deleted_at?: Date;
-
-  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: false })
-  @Exclude()
-  user?: User;
 }

@@ -46,8 +46,4 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number): Promise<void> {
-    
-    return;
-  }
 }

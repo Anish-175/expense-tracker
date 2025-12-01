@@ -123,21 +123,12 @@ export class UserService {
   //delete logged in user by id
 
   async softDelete(userId: number): Promise<void> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['categories','wallet','transactions'], // load related categories
-    });
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    // Soft delete related categories and wallets first
-    await this.categoryRepository.softDelete({ user: { id: userId } });
-    await this.walletRepository.softDelete({ user: { id: userId } });
-    await this.transactionRepository.softDelete({ user: { id: userId } });
-
-    // Then soft delete the user
+    await this.transactionRepository.softDelete({ userId });
+    await this.walletRepository.softDelete({ userId });
+    await this.categoryRepository.softDelete({ userId });
     await this.userRepository.softDelete(userId);
   }
 }

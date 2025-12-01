@@ -18,6 +18,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Category } from './entities/category.entity';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { CategoryResponseDto } from './dto/category-response.dto';
 
 @Controller('categories')
 @UseGuards(AuthGuard('jwt'))
@@ -34,7 +35,7 @@ export class CategoryController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: CurrentUserPayload): Promise<Category[]> {
+  findAll(@CurrentUser() user: CurrentUserPayload): Promise<CategoryResponseDto[]> {
     return this.categoryService.findAll(user);
   }
 
@@ -42,7 +43,7 @@ export class CategoryController {
   findOne(
     @Param('id', new ParseIntPipe()) id: number,
     @CurrentUser() user: CurrentUserPayload,
-  ): Promise<Category> {
+  ): Promise<CategoryResponseDto> {
     return this.categoryService.findOne(id, user);
   }
 
@@ -51,7 +52,7 @@ export class CategoryController {
     @Param('id', new ParseIntPipe()) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
     @CurrentUser() user: CurrentUserPayload,
-  ): Promise<Category> {
+  ): Promise<CategoryResponseDto> {
     return this.categoryService.update(id, updateCategoryDto, user);
   }
 

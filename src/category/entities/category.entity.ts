@@ -26,7 +26,9 @@ export class Category {
   @Exclude()
   user?: User;
 
-  
+  @Column()
+  @Expose()
+  userId: number;
 
   @Column({ type: 'varchar', length: 255 })
   @Expose()

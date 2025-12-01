@@ -1,5 +1,5 @@
 // users/dto/user-response.dto.ts
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
 export class UserResponseDto {
   @Expose()

@@ -14,6 +14,8 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from '../user/entities/user.entity';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { CategoryResponseDto } from './dto/category-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CategoryService {
@@ -28,7 +30,7 @@ export class CategoryService {
   async create(
     createCategoryDto: CreateCategoryDto,
     user: CurrentUserPayload, //get user from payload
-  ): Promise<Category> {
+  ): Promise<CategoryResponseDto> {
     try {
       const { name } = createCategoryDto; //destructure category fields from the dto
 
@@ -55,7 +57,10 @@ export class CategoryService {
         // Optionally update other fields (like icon, type) if provided in DTO
         Object.assign(existingCategory, createCategoryDto);
         const restored = await this.categoryRepository.save(existingCategory);
-        return restored;
+
+        return plainToInstance(CategoryResponseDto, restored, {
+          excludeExtraneousValues: true,
+        });
       }
 
       //case-3 new category
@@ -77,7 +82,9 @@ export class CategoryService {
 
       const savedCategory = await this.categoryRepository.save(category); //saves data to database
 
-      return savedCategory; //returns the saved data
+      return plainToInstance(CategoryResponseDto, savedCategory, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       //other errors
       console.error('Error in CategoryService.create:', {
@@ -94,10 +101,14 @@ export class CategoryService {
 
   //returns all categories
 
-  async findAll(user: CurrentUserPayload): Promise<Category[]> {
+  async findAll(user: CurrentUserPayload): Promise<CategoryResponseDto[]> {
     try {
-      return this.categoryRepository.find({
-        where: [{ user: { id: user.userId } }],
+      const categories = await this.categoryRepository.find({
+        where: { user: { id: user.userId } },
+      });
+
+      return plainToInstance(CategoryResponseDto, categories, {
+        excludeExtraneousValues: true,
       });
     } catch (error) {
       console.error('Error in CategoryService.findAll:', {
@@ -111,8 +122,11 @@ export class CategoryService {
     }
   }
 
-  //returns a single categoru by id
-  async findOne(id: number, user: CurrentUserPayload): Promise<Category> {
+  //returns a single category by id
+  async findOne(
+    id: number,
+    user: CurrentUserPayload,
+  ): Promise<CategoryResponseDto> {
     try {
       const category = await this.categoryRepository.findOne({
         where: { id },
@@ -129,7 +143,9 @@ export class CategoryService {
           'You do not have permission to access this category',
         );
       }
-      return category;
+      return plainToInstance(CategoryResponseDto, category, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       console.error('Error in CategoryService.findOne:', {
         message: error.message,
@@ -142,13 +158,12 @@ export class CategoryService {
       );
     }
   }
-
-  //upadte a category by id
+  //update a category by id
   async update(
     id: number,
     updateCategoryDto: UpdateCategoryDto,
     user: CurrentUserPayload,
-  ): Promise<Category> {
+  ): Promise<CategoryResponseDto> {
     try {
       const category = await this.findOne(id, user); // Get existing category
 
@@ -171,25 +186,21 @@ export class CategoryService {
           } else if (existingWithDeleted.id !== id) {
             // Soft-deleted category with the same name exists — restore it or error
             await this.categoryRepository.recover(existingWithDeleted);
-            return existingWithDeleted;
+            await this.categoryRepository.recover(existingWithDeleted);
+            return plainToInstance(CategoryResponseDto, existingWithDeleted, {
+              excludeExtraneousValues: true,
+            });
           }
         }
       }
-
+      // Merge updates
       Object.assign(category, updateCategoryDto);
+
       const savedCategory = await this.categoryRepository.save(category);
 
-      const result = await this.categoryRepository.findOne({
-        where: { id: savedCategory.id },
+      return plainToInstance(CategoryResponseDto, savedCategory, {
+        excludeExtraneousValues: true,
       });
-
-      if (!result) {
-        throw new NotFoundException(
-          `Category with ID ${savedCategory.id} not found after update`,
-        );
-      }
-
-      return result;
     } catch (error) {
       console.error('Error in CategoryService.update:', {
         message: error.message,
@@ -198,7 +209,6 @@ export class CategoryService {
         user,
         updateCategoryDto,
       });
-
       throw new InternalServerErrorException(
         `Failed to update category: ${error.message}`,
       );
