@@ -7,9 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
-  ClassSerializerInterceptor,
-  UseInterceptors,
   ParseIntPipe,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
@@ -18,12 +15,11 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
-import { Transaction } from './entities/transaction.entity';
+
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 
 @Controller('transactions')
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(ClassSerializerInterceptor)
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 

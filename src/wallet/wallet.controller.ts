@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ClassSerializerInterceptor,
-  UseInterceptors,
   ParseIntPipe,
 } from '@nestjs/common';
 
@@ -17,13 +15,11 @@ import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { AuthGuard } from '@nestjs/passport';
-import { Wallet } from './entities/wallet.entity';
 import { WalletService } from './wallet.service';
 import { WalletResponseDto } from './dto/wallet-response.dto';
 
 @Controller('wallets')
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(ClassSerializerInterceptor)
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
