@@ -15,7 +15,7 @@ export enum CategoryType {
   INCOME = 'income',
   EXPENSE = 'expense',
 }
-@Index('IDX_category_name_user_id', ['name', 'user'], { unique: true })
+@Index('IDX_category_name_user_id', ['name', 'userId'], { unique: true })
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn()

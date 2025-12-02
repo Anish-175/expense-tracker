@@ -19,7 +19,7 @@ export enum WalletType {
 }
 
 @Entity('wallets')
-@Index('IDX_wallet_name_user_id', ['name', 'user'], { unique: true })
+@Index('IDX_wallet_name_user_id', ['name', 'userId'], { unique: true })
 export class Wallet {
   @PrimaryGeneratedColumn()
   id: number;
