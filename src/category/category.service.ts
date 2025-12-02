@@ -186,7 +186,6 @@ export class CategoryService {
           } else if (existingWithDeleted.id !== id) {
             // Soft-deleted category with the same name exists — restore it or error
             await this.categoryRepository.recover(existingWithDeleted);
-            await this.categoryRepository.recover(existingWithDeleted);
             return plainToInstance(CategoryResponseDto, existingWithDeleted, {
               excludeExtraneousValues: true,
             });

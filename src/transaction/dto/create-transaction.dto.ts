@@ -24,7 +24,7 @@ export class CreateTransactionDto {
   type: TransactionType;
 
   @IsNotEmpty()
-  Date: Date;
+  date: Date;
 
   @IsString()
   @IsOptional()

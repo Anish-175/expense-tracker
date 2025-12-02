@@ -13,6 +13,8 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class TransactionService {
@@ -28,7 +30,7 @@ export class TransactionService {
   async create(
     createTransactionDto: CreateTransactionDto,
     user: CurrentUserPayload,
-  ): Promise<Transaction> {
+  ): Promise<TransactionResponseDto> {
     try {
       // Validate wallet ownership
       const wallet = await this.walletRepository.findOne({
@@ -58,7 +60,10 @@ export class TransactionService {
         ...createTransactionDto,
         userId: user.userId,
       });
-      return await this.transactionRepository.save(transaction);
+      const newTransaction = await this.transactionRepository.save(transaction);
+      return plainToInstance(TransactionResponseDto, newTransaction, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       console.error('Error in TransactionService.create:', {
         message: error.message,
@@ -72,11 +77,14 @@ export class TransactionService {
     }
   }
 
-  async findAll(user: CurrentUserPayload): Promise<Transaction[]> {
+  async findAll(user: CurrentUserPayload): Promise<TransactionResponseDto[]> {
     try {
-      return await this.transactionRepository.find({
+      const transaction = await this.transactionRepository.find({
         where: { userId: user.userId },
         order: { date: 'DESC' },
+      });
+      return plainToInstance(TransactionResponseDto, transaction, {
+        excludeExtraneousValues: true,
       });
     } catch (error) {
       console.error('Error in TransactionService.findAll:', {
@@ -90,7 +98,10 @@ export class TransactionService {
     }
   }
 
-  async findOne(id: number, user: CurrentUserPayload): Promise<Transaction> {
+  async findOne(
+    id: number,
+    user: CurrentUserPayload,
+  ): Promise<TransactionResponseDto> {
     try {
       const transaction = await this.transactionRepository.findOne({
         where: { id },
@@ -103,7 +114,9 @@ export class TransactionService {
           'You do not have permission to access this transaction',
         );
       }
-      return transaction;
+      return plainToInstance(TransactionResponseDto, transaction, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       console.error('Error in TransactionService.findOne:', {
         message: error.message,
@@ -121,7 +134,7 @@ export class TransactionService {
     id: number,
     updateTransactionDto: UpdateTransactionDto,
     user: CurrentUserPayload,
-  ): Promise<Transaction> {
+  ): Promise<TransactionResponseDto> {
     try {
       const transaction = await this.findOne(id, user);
 
@@ -154,7 +167,10 @@ export class TransactionService {
       }
 
       Object.assign(transaction, updateTransactionDto);
-      return await this.transactionRepository.save(transaction);
+      const savedTransaction = await this.transactionRepository.save(transaction);
+      return plainToInstance(TransactionResponseDto, savedTransaction, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       console.error('Error in TransactionService.update:', {
         message: error.message,
@@ -174,7 +190,7 @@ export class TransactionService {
     user: CurrentUserPayload,
   ): Promise<{ message: string }> {
     try {
-      const transaction = await this.findOne(id, user);
+      await this.findOne(id, user);
       await this.transactionRepository.softDelete(id);
       return { message: 'Transaction deleted successfully' };
     } catch (error) {
