@@ -19,42 +19,32 @@ export enum CategoryType {
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn()
-  @Expose()
   id: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @Exclude()
   user?: User;
 
   @Column()
-  @Expose()
   userId: number;
 
   @Column({ type: 'varchar', length: 255 })
-  @Expose()
   name: string;
 
   @Column({ type: 'enum', enum: CategoryType })
-  @Expose()
   type: CategoryType;
 
   @Column({ type: 'varchar', length: 7 })
-  @Expose()
   color: string;
 
   @Column({ type: 'boolean', default: false })
-  @Expose()
   is_default: boolean;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  @Expose()
   created_at: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  @Expose()
   updated_at: Date;
 
   @DeleteDateColumn({ type: 'timestamptz' })
-  @Exclude()
   deleted_at?: Date;
 }
