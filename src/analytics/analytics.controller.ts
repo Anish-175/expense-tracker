@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
@@ -10,8 +9,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { AnalyticsService } from 'src/analytics/analytics.service';
-import { Wallet } from 'src/wallet/entities/wallet.entity';
-import { SummaryDto } from './dto/analytics.dto';
+import { OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
@@ -21,7 +19,7 @@ export class AnalyticsController {
   @Get('overall/summary')
   async overallSummary(
     @CurrentUser() user: CurrentUserPayload,
-  ): Promise<SummaryDto> {
+  ): Promise<OverallSummaryDto> {
     return await this.analyticsService.overallSummary(user.userId);
   }
 
@@ -29,7 +27,7 @@ export class AnalyticsController {
   async walletSummary(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id', new ParseIntPipe()) walletId: number,
-  ): Promise<SummaryDto> {
+  ): Promise<WalletSummaryDto> {
     return await this.analyticsService.walletSummary( user.userId, walletId);
   }
 }

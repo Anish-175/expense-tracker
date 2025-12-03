@@ -1,54 +1,34 @@
-import { IsDateString, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { TransactionType } from "src/transaction/entities/transaction.entity";
 
-export enum AnalyticsPeriod {
-  DAY = 'day',
-  MONTH = 'month',
-  WEEK = 'week'
+export class OverallSummaryDto {
+  totalIncome: number;
+  totalExpense: number;
+  currentBalance: number;
 }
 
-export class AnalyticsQueryDto {
-  @IsOptional()
-  @IsDateString()
-  start?: string;
-
-  @IsOptional()
-  @IsDateString()
-  end?: string;
-
-    @IsOptional()
-    @IsEnum(AnalyticsPeriod)
-    period?: AnalyticsPeriod;
-
-  @IsOptional()
-  @IsInt()
-  @Type(() => Number)
-  @Min(1)
-  limit?: number = 100;
-}
-
-export class SummaryDto {
-  totalIncome: number; // cents
-  totalExpense: number; // cents
-  currentBalance: number; // cents
-}
-
-
-export class walletSummaryDto{
-    walletId: number;
-    totalExpense: number;
-    totalIncome: number;
-    currentBalance: number;
+export class WalletSummaryDto {
+  walletId: number;
+  totalExpense: number;
+  totalIncome: number;
+  initial_balance: number;
+  currentBalance: number;
+  transactions: {
+    id: number;
+    type: TransactionType
+    amount: number;
+    date: Date;
+    description?: string;
+  }[];
 }
 
 export class CategoryBreakdownDto {
   categoryId: number;
   categoryName: string;
-  total: number; // cents
+  total: number;
 }
 
 export class TrendPointDto {
   period: string; // e.g., '2025-11' or '2025-11-17'
-  income: number; // cents
-  expense: number; // cents
+  income: number;
+  expense: number;
 }

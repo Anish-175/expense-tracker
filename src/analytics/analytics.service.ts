@@ -6,7 +6,7 @@ import { Wallet } from '../wallet/entities/wallet.entity';
 import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
-import { SummaryDto, walletSummaryDto } from './dto/analytics.dto';
+import { OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
 
 @Injectable()
 export class AnalyticsService {
@@ -19,7 +19,7 @@ export class AnalyticsService {
   ) {}
 
   /* Overall summary*/
-  async overallSummary(userId: number): Promise<SummaryDto> {
+  async overallSummary(userId: number): Promise<OverallSummaryDto> {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId);
     const currentBalance =
@@ -31,27 +31,45 @@ export class AnalyticsService {
     };
   }
 
+  /*wallet summary */
   async walletSummary(
     userId: number,
     walletId: number,
-  ): Promise<walletSummaryDto> {
+  ): Promise<WalletSummaryDto> {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId, walletId);
-    const currentBalance = await this.analyticsRepository.currentNetBalance(
-      userId,
-      walletId,
-    );
+
+    const wallet = await this.walletRepository.findOne({
+      where: { id: walletId },
+    });
+    if (!wallet) throw new NotFoundException(`Wallet ${walletId} not found`);
+
+    const initial_balance = Number(wallet.initial_balance);
+
+    const transactions = await this.transactionRepository.find({
+      where: { wallet: { id: walletId }, user: { id: userId } },
+      order: { date: 'DESC' },
+    });
+
     return {
-      walletId:walletId,
+      walletId: walletId,
       totalIncome: income,
       totalExpense: expense,
-      currentBalance: currentBalance
-    }
+      initial_balance: initial_balance,
+      currentBalance: initial_balance + income - expense,
+      transactions: transactions.map((tx) => ({
+        id: tx.id,
+        type: tx.type,
+        amount: Number(tx.amount),
+        date: tx.date,
+        description: tx.description,
+      })),
+    };
+
+    /*daily analytics */
+
+    /* weekly analytics */
+
+    /* */
   }
-
-  /*daily analytics */
-
-  /* weekly analytics */
-
-  /* */
 }
