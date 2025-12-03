@@ -1,6 +1,4 @@
-import { Exclude, Expose } from 'class-transformer';
-import { Category } from 'src/category/entities/category.entity';
-import { Transaction } from 'src/transaction/entities/transaction.entity';
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -8,7 +6,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToMany,
 } from 'typeorm';
 
 @Entity('users')

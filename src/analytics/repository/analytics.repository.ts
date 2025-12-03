@@ -1,17 +1,23 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Transaction, TransactionType } from "src/transaction/entities/transaction.entity";
-import { Wallet } from "src/wallet/entities/wallet.entity";
-import {  Repository } from "typeorm";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  Transaction,
+  TransactionType,
+} from 'src/transaction/entities/transaction.entity';
+import { Wallet } from 'src/wallet/entities/wallet.entity';
+import { Repository } from 'typeorm';
+import { DateRange } from '../utils/date-helpers';
 
 @Injectable()
 export class AnalyticsRepository {
   constructor(
     @InjectRepository(Transaction)
-    private transactionRepo: Repository<Transaction>,
+    private transactionRepository: Repository<Transaction>,
     @InjectRepository(Wallet)
-    private walletRepo: Repository<Wallet>,
+    private walletRepository: Repository<Wallet>,
   ) {}
+
+  // Sum amounts by type with optional wallet and date range filters
   async sumByTypeAndDateRange(
     userId: number,
     type: TransactionType,
@@ -19,7 +25,7 @@ export class AnalyticsRepository {
     startDate?: Date,
     endDate?: Date,
   ): Promise<number> {
-    const query = this.transactionRepo
+    const query = this.transactionRepository
       .createQueryBuilder('t')
       .select('COALESCE(SUM(t.amount), 0)', 'total')
       .where('t.userId = :userId', { userId })
@@ -46,14 +52,18 @@ export class AnalyticsRepository {
     return parseFloat(result?.total) || 0;
   }
 
-  async totalExpenses(
-    userId: number): Promise<number> {
-    const result = await this.transactionRepo
-      .createQueryBuilder('t')
-      .select('COALESCE(SUM(t.amount), 0)', 'total')
-      .where('t.userId = :userId', { userId })
-      .andWhere('t.type = :type', { type: TransactionType.EXPENSE })
+  // Calculate current net balance
+  async currentNetBalance(userId: number): Promise<number> {
+    const { totalInitialBalance = 0 } = await this.walletRepository
+      .createQueryBuilder('wallet')
+      .select('SUM(wallet.initial_balance)', 'totalInitialBalance')
+      .where('wallet.userId = :userId', { userId })
       .getRawOne();
-    return parseFloat(result?.total) || 0;
+
+    const transactionSum =
+      (await this.sumByTypeAndDateRange(userId, TransactionType.INCOME)) -
+      (await this.sumByTypeAndDateRange(userId, TransactionType.EXPENSE));
+
+    return Number(totalInitialBalance) + Number(transactionSum);
   }
 }

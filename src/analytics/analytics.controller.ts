@@ -4,15 +4,17 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
+import { SummaryDto } from './dto/analytics.dto';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) { }
-  @Get('total-expenses')
-  async totalExpenses(@CurrentUser() user: CurrentUserPayload): Promise<{ totalExpenses: number }> {
-    const totalExpenses = await this.analyticsService.totalExpense(user.userId);
-    return { totalExpenses };
+
+  @Get('total/summary')
+  async overallSummary(@CurrentUser() user: CurrentUserPayload): Promise<SummaryDto> {
+    return await this.analyticsService.overallSummary(user.userId)
   }
+
 
 }
