@@ -23,13 +23,12 @@ export class AnalyticsService {
   async overallSummary(
     userId: number,
   ): Promise<SummaryDto> {
-    const totalIncome = await this.analyticsRepository.sumByTypeAndDateRange(userId, TransactionType.INCOME);
-    const totalExpense = await this.analyticsRepository.sumByTypeAndDateRange(userId, TransactionType.EXPENSE);
-    const netBalance = await this.analyticsRepository.currentNetBalance(userId);
+    const { income, expense } = await this.analyticsRepository.sumIncomeAndExpense(userId)
+    const currentBalance = await this.analyticsRepository.currentNetBalance(userId);
     return {
-      totalIncome: totalIncome,
-      totalExpense: totalExpense,
-      net: netBalance
+      totalIncome: income,
+      totalExpense: expense,
+      currentBalance: currentBalance
     }
   }
 

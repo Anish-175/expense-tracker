@@ -17,53 +17,65 @@ export class AnalyticsRepository {
     private walletRepository: Repository<Wallet>,
   ) {}
 
-  // Sum amounts by type with optional wallet and date range filters
-  async sumByTypeAndDateRange(
+  /* sum of income and expenses */
+  async sumIncomeAndExpense(
     userId: number,
-    type: TransactionType,
     walletId?: number,
     startDate?: Date,
     endDate?: Date,
-  ): Promise<number> {
-    const query = this.transactionRepository
+  ): Promise<any> {
+    const qb = this.transactionRepository
       .createQueryBuilder('t')
-      .select('COALESCE(SUM(t.amount), 0)', 'total')
+      .select(
+        `
+      COALESCE(SUM(CASE WHEN t.type = :income THEN t.amount END), 0) AS income,
+      COALESCE(SUM(CASE WHEN t.type = :expense THEN t.amount END), 0) AS expense
+    `,
+      )
       .where('t.userId = :userId', { userId })
-      .andWhere('t.type = :type', { type });
+      .setParameters({
+        income: TransactionType.INCOME,
+        expense: TransactionType.EXPENSE,
+      });
 
-    // wallet filter (use !== undefined to allow walletId = 0)
-    if (walletId !== undefined) {
-      query.andWhere('t.walletId = :walletId', { walletId });
-    }
+    //for wallet specific transactions
+    if (walletId !== undefined)
+      qb.andWhere('t.walletId = :walletId', { walletId });
 
-    // date filters (handle all combinations)
+    //for date range
     if (startDate && endDate) {
-      query.andWhere('t.date BETWEEN :start AND :end', {
+      qb.andWhere('t.date BETWEEN :start AND :end', {
         start: startDate,
         end: endDate,
       });
     } else if (startDate) {
-      query.andWhere('t.date >= :start', { start: startDate });
+      qb.andWhere('t.date >= :start', { start: startDate });
     } else if (endDate) {
-      query.andWhere('t.date <= :end', { end: endDate });
+      qb.andWhere('t.date <= :end', { end: endDate });
     }
 
-    const result = await query.getRawOne();
-    return parseFloat(result?.total) || 0;
+    const result = await qb.getRawOne();
+
+    //convert to number
+    return {
+      income: Number(result?.income) || 0,
+      expense: Number(result?.expense) || 0,
+    };
   }
 
-  // Calculate current net balance
+  /* current Net balance(initial_balance + income - expense) for user */
   async currentNetBalance(userId: number): Promise<number> {
     const { totalInitialBalance = 0 } = await this.walletRepository
-      .createQueryBuilder('wallet')
-      .select('SUM(wallet.initial_balance)', 'totalInitialBalance')
-      .where('wallet.userId = :userId', { userId })
+      .createQueryBuilder('w')
+      .select('COALESCE(SUM(w.initial_balance), 0)', 'totalInitialBalance')
+      .where('w.userId = :userId', { userId })
       .getRawOne();
 
-    const transactionSum =
-      (await this.sumByTypeAndDateRange(userId, TransactionType.INCOME)) -
-      (await this.sumByTypeAndDateRange(userId, TransactionType.EXPENSE));
+    const { income = 0, expense = 0 } = await this.sumIncomeAndExpense(userId);
 
-    return Number(totalInitialBalance) + Number(transactionSum);
+    return Number(totalInitialBalance) + Number(income) - Number(expense);
   }
+
+
+  
 }

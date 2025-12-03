@@ -30,7 +30,7 @@ export class AnalyticsQueryDto {
 export class SummaryDto {
   totalIncome: number; // cents
   totalExpense: number; // cents
-  net: number; // cents
+  currentBalance: number; // cents
 }
 
 export class CategoryBreakdownDto {

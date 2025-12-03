@@ -11,7 +11,7 @@ import { SummaryDto } from './dto/analytics.dto';
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) { }
 
-  @Get('total/summary')
+  @Get('overall/summary')
   async overallSummary(@CurrentUser() user: CurrentUserPayload): Promise<SummaryDto> {
     return await this.analyticsService.overallSummary(user.userId)
   }
