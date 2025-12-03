@@ -95,7 +95,7 @@ export class WalletService {
     }
   }
 
-  //returns all categories
+  //returns all wallets of a user
 
   async findAll(user: CurrentUserPayload): Promise<WalletResponseDto[]> {
     try {

@@ -60,9 +60,7 @@ export class TransactionService {
         userId: user.userId,
       });
       const newTransaction = await this.transactionRepository.save(transaction);
-      return plainToInstance(TransactionResponseDto, newTransaction, {
-        excludeExtraneousValues: true,
-      });
+      return plainToInstance(TransactionResponseDto, newTransaction, {});
     } catch (error) {
       console.error('Error in TransactionService.create:', {
         message: error.message,
@@ -82,9 +80,7 @@ export class TransactionService {
         where: { userId: user.userId },
         order: { date: 'DESC' },
       });
-      return plainToInstance(TransactionResponseDto, transaction, {
-        excludeExtraneousValues: true,
-      });
+      return plainToInstance(TransactionResponseDto, transaction, {});
     } catch (error) {
       console.error('Error in TransactionService.findAll:', {
         message: error.message,
@@ -113,9 +109,7 @@ export class TransactionService {
           'You do not have permission to access this transaction',
         );
       }
-      return plainToInstance(TransactionResponseDto, transaction, {
-        excludeExtraneousValues: true,
-      });
+      return plainToInstance(TransactionResponseDto, transaction, {});
     } catch (error) {
       console.error('Error in TransactionService.findOne:', {
         message: error.message,
@@ -166,10 +160,9 @@ export class TransactionService {
       }
 
       Object.assign(transaction, updateTransactionDto);
-      const savedTransaction = await this.transactionRepository.save(transaction);
-      return plainToInstance(TransactionResponseDto, savedTransaction, {
-        excludeExtraneousValues: true,
-      });
+      const savedTransaction =
+        await this.transactionRepository.save(transaction);
+      return plainToInstance(TransactionResponseDto, savedTransaction, {});
     } catch (error) {
       console.error('Error in TransactionService.update:', {
         message: error.message,

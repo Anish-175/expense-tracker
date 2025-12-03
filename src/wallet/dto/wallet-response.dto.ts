@@ -9,7 +9,7 @@ export class WalletResponseDto {
   name: string;
 
   @Expose()
-  type: WalletType
+  type: WalletType;
 
   @Expose()
   initial_balance: number;
