@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Transaction,
@@ -7,6 +7,7 @@ import {
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Repository } from 'typeorm';
 import { DateRange } from '../utils/date-helpers';
+import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
 export class AnalyticsRepository {
@@ -15,6 +16,7 @@ export class AnalyticsRepository {
     private transactionRepository: Repository<Transaction>,
     @InjectRepository(Wallet)
     private walletRepository: Repository<Wallet>,
+    private walletService: WalletService,
   ) {}
 
   /* sum of income and expenses */
@@ -64,18 +66,42 @@ export class AnalyticsRepository {
   }
 
   /* current Net balance(initial_balance + income - expense) for user */
-  async currentNetBalance(userId: number): Promise<number> {
-    const { totalInitialBalance = 0 } = await this.walletRepository
-      .createQueryBuilder('w')
-      .select('COALESCE(SUM(w.initial_balance), 0)', 'totalInitialBalance')
-      .where('w.userId = :userId', { userId })
-      .getRawOne();
+  /* current Net balance for user or specific wallet */
+  async currentNetBalance(userId: number, walletId?: number): Promise<number> {
+    let totalInitialBalance = 0;
+    let income = 0;
+    let expense = 0;
 
-    const { income = 0, expense = 0 } = await this.sumIncomeAndExpense(userId);
+    // If walletId is provided → compute for that wallet only
+    if (walletId != null) {
+      const wallet = await this.walletRepository.findOne({
+        where: { id: walletId },
+      });
 
-    return Number(totalInitialBalance) + Number(income) - Number(expense);
+      if (!wallet) {
+        throw new NotFoundException(`Wallet with ID ${walletId} not found`);
+      }
+      totalInitialBalance = wallet.initial_balance;
+
+      const result = await this.sumIncomeAndExpense(userId, walletId);
+      income = Number(result.income);
+      expense = Number(result.expense);
+    }
+    // Otherwise calculate for ALL wallets of user
+    else {
+      const rawBalance = await this.walletRepository
+        .createQueryBuilder('w')
+        .select('COALESCE(SUM(w.initial_balance), 0)', 'balance')
+        .where('w.userId = :userId', { userId })
+        .getRawOne();
+
+      totalInitialBalance = Number(rawBalance.balance);
+
+      const result = await this.sumIncomeAndExpense(userId);
+      income = Number(result.income);
+      expense = Number(result.expense);
+    }
+
+    return totalInitialBalance + income - expense;
   }
-
-
-  
 }

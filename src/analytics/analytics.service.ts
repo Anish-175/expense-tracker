@@ -6,7 +6,7 @@ import { Wallet } from '../wallet/entities/wallet.entity';
 import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
-import { SummaryDto } from './dto/analytics.dto';
+import { SummaryDto, walletSummaryDto } from './dto/analytics.dto';
 
 @Injectable()
 export class AnalyticsService {
@@ -18,14 +18,31 @@ export class AnalyticsService {
     private readonly analyticsRepository: AnalyticsRepository,
   ) {}
 
-
   /* Overall summary*/
-  async overallSummary(
-    userId: number,
-  ): Promise<SummaryDto> {
-    const { income, expense } = await this.analyticsRepository.sumIncomeAndExpense(userId)
-    const currentBalance = await this.analyticsRepository.currentNetBalance(userId);
+  async overallSummary(userId: number): Promise<SummaryDto> {
+    const { income, expense } =
+      await this.analyticsRepository.sumIncomeAndExpense(userId);
+    const currentBalance =
+      await this.analyticsRepository.currentNetBalance(userId);
     return {
+      totalIncome: income,
+      totalExpense: expense,
+      currentBalance: currentBalance,
+    };
+  }
+
+  async walletSummary(
+    userId: number,
+    walletId: number,
+  ): Promise<walletSummaryDto> {
+    const { income, expense } =
+      await this.analyticsRepository.sumIncomeAndExpense(userId, walletId);
+    const currentBalance = await this.analyticsRepository.currentNetBalance(
+      userId,
+      walletId,
+    );
+    return {
+      walletId:walletId,
       totalIncome: income,
       totalExpense: expense,
       currentBalance: currentBalance

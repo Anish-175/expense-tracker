@@ -33,6 +33,14 @@ export class SummaryDto {
   currentBalance: number; // cents
 }
 
+
+export class walletSummaryDto{
+    walletId: number;
+    totalExpense: number;
+    totalIncome: number;
+    currentBalance: number;
+}
+
 export class CategoryBreakdownDto {
   categoryId: number;
   categoryName: string;
