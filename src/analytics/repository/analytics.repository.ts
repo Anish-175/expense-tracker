@@ -7,6 +7,7 @@ import {
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Repository } from 'typeorm';
 import { DateRange } from '../utils/date-helpers';
+import { AnalyticsFilters } from '../dto/analytics.dto';
 
 @Injectable()
 export class AnalyticsRepository {
@@ -20,9 +21,7 @@ export class AnalyticsRepository {
   /* sum of income and expenses */
   async sumIncomeAndExpense(
     userId: number,
-    walletId?: number,
-    startDate?: Date,
-    endDate?: Date,
+    { walletId, startDate, endDate }: AnalyticsFilters = {},
   ): Promise<any> {
     const qb = this.transactionRepository
       .createQueryBuilder('t')
@@ -79,10 +78,8 @@ export class AnalyticsRepository {
   /* get transactions by a date range */
   async getTransactionsByDateRange(
     userId: number,
-    startDate?: Date,
-    endDate?: Date,
-    walletId?: number,
-  ) {
+    { walletId, startDate, endDate }: AnalyticsFilters = {},
+  ): Promise<Transaction[]> {
     const qb = this.transactionRepository
       .createQueryBuilder('t')
       .where('t.userId = :userId', { userId });

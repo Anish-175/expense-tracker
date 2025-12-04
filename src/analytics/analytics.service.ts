@@ -42,7 +42,7 @@ export class AnalyticsService {
     walletId: number,
   ): Promise<WalletSummaryDto> {
     const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(userId, walletId);
+      await this.analyticsRepository.sumIncomeAndExpense(userId, { walletId });
 
     const wallet = await this.walletRepository.findOne({
       where: { id: walletId },
@@ -51,10 +51,10 @@ export class AnalyticsService {
 
     const initial_balance = Number(wallet.initial_balance);
 
-    const transactions = await this.transactionRepository.find({
-      where: { wallet: { id: walletId }, user: { id: userId } },
-      order: { date: 'DESC' },
-    });
+    const transactions =
+      await this.analyticsRepository.getTransactionsByDateRange(userId, {
+        walletId,
+      });
 
     return AnalyticsMapper.toWalletAnalytics(
       walletId,
@@ -75,18 +75,15 @@ export class AnalyticsService {
     walletId?: number,
   ): Promise<any> {
     const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(
-        userId,
-        undefined,
-        start,
-        end,
-      );
+      await this.analyticsRepository.sumIncomeAndExpense(userId, {
+        startDate: start,
+        endDate: end,
+      });
     const transactions =
-      await this.analyticsRepository.getTransactionsByDateRange(
-        userId,
-        start,
-        end,
-      );
+      await this.analyticsRepository.getTransactionsByDateRange(userId, {
+        startDate: start,
+        endDate: end,
+      });
     return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
   }
 

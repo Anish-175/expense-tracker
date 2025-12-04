@@ -1,5 +1,5 @@
-import { IsOptional, IsIn, IsDateString } from "class-validator";
-import { TransactionSummaryDto } from "src/transaction/dto/transaction-summary.dto";
+import { IsOptional, IsIn, IsDateString } from 'class-validator';
+import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.dto';
 
 //output dto for overall analytics responses
 export class OverallSummaryDto {
@@ -26,7 +26,6 @@ export class PeriodAnalyticsDto {
   transactions: TransactionSummaryDto[];
 }
 
-
 export class CategoryBreakdownDto {
   categoryId: number;
   categoryName: string;
@@ -34,7 +33,7 @@ export class CategoryBreakdownDto {
 }
 
 export class TrendPointDto {
-  period: string; 
+  period: string;
   income: number;
   expense: number;
 }
@@ -48,4 +47,10 @@ export class DateRangeQueryDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+}
+
+export interface AnalyticsFilters {
+  walletId?: number;
+  startDate?: Date;
+  endDate?: Date;
 }
