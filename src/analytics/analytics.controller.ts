@@ -11,7 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { AnalyticsService } from 'src/analytics/analytics.service';
-import { OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
+import { DateRangeQueryDto, OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
@@ -50,10 +50,10 @@ export class AnalyticsController {
     return await this.analyticsService.monthlyAnalytics(user.userId);
   }
 
-  //   @Post('custom')
-  //   async customRangeAnalytics(
-  //     @CurrentUser() user: CurrentUserPayload, @Body() dto:DateRangeQueryDto
-  //   ): Promise<any> {
-  //     return await this.analyticsService.customDateRangeAnalytics(user.userId, dto);
-  //   }
+    @Post('custom')
+    async customRangeAnalytics(
+      @CurrentUser() user: CurrentUserPayload, @Body() dto:DateRangeQueryDto
+    ): Promise<any> {
+      return await this.analyticsService.customDateRangeAnalytics(user.userId, dto);
+    }
 }

@@ -6,7 +6,7 @@ import { Wallet } from '../wallet/entities/wallet.entity';
 import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
-import { OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
+import { DateRangeQueryDto, OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
 
 @Injectable()
@@ -119,26 +119,26 @@ export class AnalyticsService {
     return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
   }
 
-  // async customDateRangeAnalytics(
-  //   userId: number,
-  //   dto: RangeQueryDto
-  // ): Promise<any> {
-  //   const { start, end } = DateRange.custom(dto);
-  //   const { income, expense } =
-  //     await this.analyticsRepository.sumIncomeAndExpense(
-  //       userId,
-  //       undefined,
-  //       start,
-  //       end,
-  //     );  
-  //   const transactions =
-  //     await this.analyticsRepository.getTransactionsByDateRange(
-  //       userId,
-  //       start,
-  //       end,
-  //     );
-  //   return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
-  // }
+  async customDateRangeAnalytics(
+    userId: number,
+    dto: DateRangeQueryDto
+  ): Promise<any> {
+    const { start, end } = DateRange.normalizeDates(dto);
+    const { income, expense } =
+      await this.analyticsRepository.sumIncomeAndExpense(
+        userId,
+        undefined,
+        start,
+        end,
+      );  
+    const transactions =
+      await this.analyticsRepository.getTransactionsByDateRange(
+        userId,
+        start,
+        end,
+      );
+    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
+  }
 }
 
 /* */

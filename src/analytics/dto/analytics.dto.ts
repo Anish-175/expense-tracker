@@ -37,12 +37,12 @@ export class TrendPointDto {
   expense: number;
 }
 
-// export class DateRangeQueryDto {
-//   @IsOptional()
-//   @IsDateString()
-//   startDate?: string;
+export class DateRangeQueryDto {
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
 
-//   @IsOptional()
-//   @IsDateString()
-//   endDate?: string;
-// }
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+}
