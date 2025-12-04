@@ -1,7 +1,6 @@
 import { DateRangeQueryDto } from "../dto/analytics.dto";
 
 export class DateRange {
-
   //get today's date range
   static today() {
     const now = new Date();
@@ -85,7 +84,7 @@ export class DateRange {
    * Normalize dates from DTO input (strings) or partial input
    * Optionally provide defaults (default = this month)
    */
-  static normalizeDates(dto:DateRangeQueryDto) {
+  static normalizeDates(dto: DateRangeQueryDto) {
     let start: Date | undefined;
     let end: Date | undefined;
 
@@ -118,6 +117,19 @@ export class DateRange {
     }
 
     return { start, end };
+  }
+
+  //preset date ranges
+  static fromPreset(preset: 'today' | 'week' | 'month') {
+    switch (preset) {
+      case 'today':
+        return DateRange.today();
+      case 'week':
+        return DateRange.thisWeek();
+      case 'month':
+      default:
+        return DateRange.thisMonth();
+    }
   }
 }
 

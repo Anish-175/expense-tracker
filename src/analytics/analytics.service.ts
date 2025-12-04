@@ -6,7 +6,11 @@ import { Wallet } from '../wallet/entities/wallet.entity';
 import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
-import { DateRangeQueryDto, OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
+import {
+  DateRangeQueryDto,
+  OverallSummaryDto,
+  WalletSummaryDto,
+} from './dto/analytics.dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
 
 @Injectable()
@@ -61,83 +65,56 @@ export class AnalyticsService {
     );
   }
 
-  /*daily analytics */
+  /* Date range analytics */
+
+  /*custom range analytics helper */
+  async customRangeAnalytics(
+    userId: number,
+    start?: Date,
+    end?: Date,
+    walletId?: number,
+  ): Promise<any> {
+    const { income, expense } =
+      await this.analyticsRepository.sumIncomeAndExpense(
+        userId,
+        undefined,
+        start,
+        end,
+      );
+    const transactions =
+      await this.analyticsRepository.getTransactionsByDateRange(
+        userId,
+        start,
+        end,
+      );
+    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
+  }
+
+  //daily analytics
   async dailyAnalytics(userId: number): Promise<any> {
-    const { start, end } = DateRange.today();
-    const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(
-        userId,
-        undefined,
-        start,
-        end,
-      );
-    const transactions =
-      await this.analyticsRepository.getTransactionsByDateRange(
-        userId,
-        start,
-        end,
-      );
-    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
+    const { start, end } = DateRange.fromPreset('today');
+    return this.customRangeAnalytics(userId, start, end);
   }
 
-  /* weekly analytics */
+  //weekly analytics
   async weeklyAnalytics(userId: number): Promise<any> {
-    const { start, end } = DateRange.thisWeek();
-    const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(
-        userId,
-        undefined,
-        start,
-        end,
-      );
-    const transactions =
-      await this.analyticsRepository.getTransactionsByDateRange(
-        userId,
-        start,
-        end,
-      );
-    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
+    const { start, end } = DateRange.fromPreset('week');
+    return this.customRangeAnalytics(userId, start, end);
   }
 
-  /* monthly analytics */
+  //monthly analytics
   async monthlyAnalytics(userid: number): Promise<any> {
-    const { start, end } = DateRange.thisMonth();
-
-    const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(
-        userid,
-        undefined,
-        start,
-        end,
-      );
-    const transactions =
-      await this.analyticsRepository.getTransactionsByDateRange(
-        userid,
-        start,
-        end,
-      );
-    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
+    const { start, end } = DateRange.fromPreset('month');
+    return this.customRangeAnalytics(userid, start, end);
   }
 
+  //custom date range analytics
   async customDateRangeAnalytics(
     userId: number,
-    dto: DateRangeQueryDto
+    dto: DateRangeQueryDto,
   ): Promise<any> {
     const { start, end } = DateRange.normalizeDates(dto);
-    const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(
-        userId,
-        undefined,
-        start,
-        end,
-      );  
-    const transactions =
-      await this.analyticsRepository.getTransactionsByDateRange(
-        userId,
-        start,
-        end,
-      );
-    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
+    return this.customRangeAnalytics(userId, start, end);
   }
 }
 

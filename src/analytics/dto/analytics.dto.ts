@@ -1,14 +1,14 @@
 import { IsOptional, IsIn, IsDateString } from "class-validator";
 import { TransactionSummaryDto } from "src/transaction/dto/transaction-summary.dto";
-import { TransactionType } from "src/transaction/entities/transaction.entity";
-import { Transaction } from "typeorm";
 
+//output dto for overall analytics responses
 export class OverallSummaryDto {
   totalIncome: number;
   totalExpense: number;
   currentBalance: number;
 }
 
+//output dto for wallet analytics responses
 export class WalletSummaryDto {
   walletId: number;
   totalExpense: number;
@@ -18,12 +18,14 @@ export class WalletSummaryDto {
   transactions: TransactionSummaryDto[];
 }
 
+//output dto for period analytics responses(daily, weekly, monthly, custom)
 export class PeriodAnalyticsDto {
   income: number;
   expense: number;
   profit: number;
   transactions: TransactionSummaryDto[];
 }
+
 
 export class CategoryBreakdownDto {
   categoryId: number;
@@ -32,11 +34,12 @@ export class CategoryBreakdownDto {
 }
 
 export class TrendPointDto {
-  period: string; // e.g., '2025-11' or '2025-11-17'
+  period: string; 
   income: number;
   expense: number;
 }
 
+//input dto for date range queries
 export class DateRangeQueryDto {
   @IsOptional()
   @IsDateString()
