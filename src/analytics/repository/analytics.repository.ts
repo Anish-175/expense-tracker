@@ -17,9 +17,6 @@ export class AnalyticsRepository {
     private walletRepository: Repository<Wallet>,
   ) {}
 
-
-
-  
   /* sum of income and expenses */
   async sumIncomeAndExpense(
     userId: number,
@@ -66,10 +63,6 @@ export class AnalyticsRepository {
     };
   }
 
-
-
-
-
   /* current Net balance(initial_balance + income - expense) for user */
   async currentNetBalance(userId: number): Promise<number> {
     const { totalInitialBalance = 0 } = await this.walletRepository
@@ -81,5 +74,38 @@ export class AnalyticsRepository {
     const { income = 0, expense = 0 } = await this.sumIncomeAndExpense(userId);
 
     return Number(totalInitialBalance) + Number(income) - Number(expense);
+  }
+
+  /* get transactions by a date range */
+  async getTransactionsByDateRange(
+    userId: number,
+    startDate?: Date,
+    endDate?: Date,
+    walletId?: number,
+  ) {
+    const qb = this.transactionRepository
+      .createQueryBuilder('t')
+      .where('t.userId = :userId', { userId });
+
+    // Optional wallet filter
+    if (walletId !== undefined) {
+      qb.andWhere('t.walletId = :walletId', { walletId });
+    }
+
+    // Date range filters
+    if (startDate && endDate) {
+      qb.andWhere('t.date BETWEEN :start AND :end', {
+        start: startDate,
+        end: endDate,
+      });
+    } else if (startDate) {
+      qb.andWhere('t.date >= :start', { start: startDate });
+    } else if (endDate) {
+      qb.andWhere('t.date <= :end', { end: endDate });
+    }
+
+    qb.orderBy('t.date', 'DESC');
+
+    return qb.getMany();
   }
 }
