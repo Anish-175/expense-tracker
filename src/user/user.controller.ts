@@ -13,25 +13,26 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 
 @Controller('users')
+@UseGuards(AuthGuard('jwt'))
 export class UserController {
   constructor(private readonly userService: UserService) {}
   //get user profile
   @Get('profile')
-  @UseGuards(AuthGuard('jwt'))
   async getProfile(@CurrentUser() user: CurrentUserPayload) {
     return await this.userService.findById(user.userId);
   }
 
   //update user by uuid
   @Patch()
-  @UseGuards(AuthGuard('jwt'))
-  async update(@CurrentUser() user:CurrentUserPayload, @Body() updateUserDto: UpdateUserDto) {
+  async update(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return await this.userService.update(user.userId, updateUserDto);
   }
 
   //soft delete by uuid
   @Delete()
-  @UseGuards(AuthGuard('jwt'))
   async deleteUser(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ message: string }> {

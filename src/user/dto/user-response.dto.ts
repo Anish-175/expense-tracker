@@ -14,7 +14,4 @@ export class UserResponseDto {
   @Expose()
   created_at: Date;
 
-  @Expose()
-  updated_at: Date;
-
 }

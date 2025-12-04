@@ -8,21 +8,19 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
-  ClassSerializerInterceptor,
-  UseInterceptors,
+
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Category } from './entities/category.entity';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { CategoryResponseDto } from './dto/category-response.dto';
 
 @Controller('categories')
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(ClassSerializerInterceptor)
+
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 

@@ -12,6 +12,8 @@ import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Wallet, WalletType } from './entities/wallet.entity';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { WalletResponseDto } from './dto/wallet-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class WalletService {
@@ -20,12 +22,12 @@ export class WalletService {
     private walletRepository: Repository<Wallet>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async create(
     createWalletDto: CreateWalletDto,
     user: CurrentUserPayload, //get user from payload
-  ): Promise<Wallet> {
+  ): Promise<WalletResponseDto> {
     try {
       const { name } = createWalletDto; //destructure wallet fields from the dto
 
@@ -52,7 +54,9 @@ export class WalletService {
         // Optionally update other fields (like icon, type) if provided in DTO
         Object.assign(existingWallet, createWalletDto);
         const restored = await this.walletRepository.save(existingWallet);
-        return restored;
+        return plainToInstance(WalletResponseDto, restored, {
+          excludeExtraneousValues: true,
+        });
       }
 
       //case-3 new wallet
@@ -74,7 +78,9 @@ export class WalletService {
 
       const savedWallet = await this.walletRepository.save(wallet); //saves data to database
 
-      return savedWallet; //returns the saved data
+      return plainToInstance(WalletResponseDto, savedWallet, {
+        excludeExtraneousValues: true,
+      }); //returns the saved data
     } catch (error) {
       //other errors
       console.error('Error in WalletService.create:', {
@@ -89,12 +95,16 @@ export class WalletService {
     }
   }
 
-  //returns all categories
+  //returns all wallets of a user
 
-  async findAll(user: CurrentUserPayload): Promise<Wallet[]> {
+  async findAll(user: CurrentUserPayload): Promise<WalletResponseDto[]> {
     try {
-      return this.walletRepository.find({
+      const wallets = await this.walletRepository.find({
         where: [{ user: { id: user.userId } }],
+      });
+
+      return plainToInstance(WalletResponseDto, wallets, {
+        excludeExtraneousValues: true,
       });
     } catch (error) {
       console.error('Error in WalletService.findAll:', {
@@ -108,7 +118,10 @@ export class WalletService {
     }
   }
 
-  async findOne(id: number, user: CurrentUserPayload): Promise<Wallet> {
+  async findOne(
+    id: number,
+    user: CurrentUserPayload,
+  ): Promise<WalletResponseDto> {
     try {
       const wallet = await this.walletRepository.findOne({
         where: { id },
@@ -122,7 +135,9 @@ export class WalletService {
           'You do not have permission to access this wallet',
         );
       }
-      return wallet;
+      return plainToInstance(WalletResponseDto, wallet, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       console.error('Error in WalletService.findOne:', {
         message: error.message,
@@ -140,7 +155,7 @@ export class WalletService {
     id: number,
     updateWalletDto: UpdateWalletDto,
     user: CurrentUserPayload,
-  ): Promise<Wallet> {
+  ): Promise<WalletResponseDto> {
     try {
       const wallet = await this.findOne(id, user); // Get existing wallet
 
@@ -161,27 +176,20 @@ export class WalletService {
               'Wallet name already exists for this scope',
             );
           } else if (existingWithDeleted.id !== id) {
-            // Soft-deleted wallet with the same name exists — restore it or error
+            // Soft-deleted wallet with the same name exists and is not the current wallet being updated — restore it or error
             await this.walletRepository.recover(existingWithDeleted);
-            return existingWithDeleted;
+            return plainToInstance(WalletResponseDto, existingWithDeleted, {
+              excludeExtraneousValues: true,
+            });
           }
         }
       }
 
       Object.assign(wallet, updateWalletDto);
       const savedWallet = await this.walletRepository.save(wallet);
-
-      const result = await this.walletRepository.findOne({
-        where: { id: savedWallet.id },
+      return plainToInstance(WalletResponseDto, savedWallet, {
+        excludeExtraneousValues: true,
       });
-
-      if (!result) {
-        throw new NotFoundException(
-          `Wallet with ID ${savedWallet.id} not found after update`,
-        );
-      }
-
-      return result;
     } catch (error) {
       console.error('Error in WalletService.update:', {
         message: error.message,
@@ -222,11 +230,9 @@ export class WalletService {
     }
   }
 
-
-
   //default wallet
-  async createDefaultWallet(userId: number): Promise<Wallet> {
-    const user = await this.userRepository.findOne({ where: { id: userId } , });
+  async createDefaultWallet(userId: number): Promise<WalletResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
     const wallet = this.walletRepository.create({
