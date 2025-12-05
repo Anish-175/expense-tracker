@@ -40,7 +40,10 @@ export class Transaction {
   @Column()
   walletId: number;
 
-  @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Category, (category) => category.transactions, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   category?: Category;
 
   @Column({ nullable: true })

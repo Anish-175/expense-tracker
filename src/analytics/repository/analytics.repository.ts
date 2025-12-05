@@ -7,6 +7,7 @@ import {
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Repository } from 'typeorm';
 import { DateRange } from '../utils/date-helpers';
+import { AnalyticsFilters } from '../dto/analytics.dto';
 
 @Injectable()
 export class AnalyticsRepository {
@@ -20,9 +21,7 @@ export class AnalyticsRepository {
   /* sum of income and expenses */
   async sumIncomeAndExpense(
     userId: number,
-    walletId?: number,
-    startDate?: Date,
-    endDate?: Date,
+    { walletId, startDate, endDate }: AnalyticsFilters = {},
   ): Promise<any> {
     const qb = this.transactionRepository
       .createQueryBuilder('t')
@@ -79,10 +78,8 @@ export class AnalyticsRepository {
   /* get transactions by a date range */
   async getTransactionsByDateRange(
     userId: number,
-    startDate?: Date,
-    endDate?: Date,
-    walletId?: number,
-  ) {
+    { walletId, startDate, endDate }: AnalyticsFilters = {},
+  ): Promise<Transaction[]> {
     const qb = this.transactionRepository
       .createQueryBuilder('t')
       .where('t.userId = :userId', { userId });
@@ -107,5 +104,49 @@ export class AnalyticsRepository {
     qb.orderBy('t.date', 'DESC');
 
     return qb.getMany();
+  }
+
+  /* sum by category */
+  async sumByCategory(
+    userId: number,
+    { walletId, startDate, endDate }: AnalyticsFilters = {},
+  ) {
+    const qb = this.transactionRepository
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.category', 'c')
+      .select('c.id', 'categoryId')
+      .addSelect('c.name', 'categoryName')
+      .addSelect('c.type', 'categoryType')
+      .addSelect('SUM(t.amount)', 'total')
+      .addSelect('COUNT(*)', 'count')
+      .where('t.userId = :userId', { userId });
+
+    // wallet filter
+    if (walletId !== undefined)
+      qb.andWhere('t.walletId = :walletId', { walletId });
+
+    // date filters
+    if (startDate && endDate) {
+      qb.andWhere('t.date BETWEEN :start AND :end', {
+        start: startDate,
+        end: endDate,
+      });
+    } else if (startDate) {
+      qb.andWhere('t.date >= :start', { start: startDate });
+    } else if (endDate) {
+      qb.andWhere('t.date <= :end', { end: endDate });
+    }
+
+    qb.groupBy('c.id');
+
+    const result = await qb.getRawMany();
+
+    return result.map((r) => ({
+      categoryId: r.categoryId,
+      name: r.categoryName,
+      type: r.categoryType,
+      total: Number(r.total),
+      count: Number(r.count),
+    }));
   }
 }

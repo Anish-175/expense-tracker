@@ -1,3 +1,4 @@
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
@@ -8,6 +9,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
 
 export enum CategoryType {
@@ -21,7 +23,7 @@ export class Category {
   id: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user?: User;
+  user: User;
 
   @Column()
   userId: number;
@@ -46,4 +48,7 @@ export class Category {
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deleted_at?: Date;
+
+  @OneToMany(() => Transaction, (t) => t.category)
+  transactions: Transaction[];
 }
