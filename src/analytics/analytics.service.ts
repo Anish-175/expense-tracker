@@ -1,9 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
-import { Transaction } from '../transaction/entities/transaction.entity'; // Adjust path
+import {  Repository } from 'typeorm';
+import { Transaction } from '../transaction/entities/transaction.entity';
 import { Wallet } from '../wallet/entities/wallet.entity';
-import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
 import {
