@@ -1,4 +1,4 @@
-import { DateRangeQueryDto } from "../dto/analytics.dto";
+import { QueryDto } from "../dto/analytics.dto";
 
 export class DateRange {
   //get today's date range
@@ -84,7 +84,7 @@ export class DateRange {
    * Normalize dates from DTO input (strings) or partial input
    * Optionally provide defaults (default = this month)
    */
-  static normalizeDates(dto: DateRangeQueryDto) {
+  static normalizeDates(dto: QueryDto) {
     let start: Date | undefined;
     let end: Date | undefined;
 

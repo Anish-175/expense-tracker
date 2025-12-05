@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {  Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Transaction } from '../transaction/entities/transaction.entity';
 import { Wallet } from '../wallet/entities/wallet.entity';
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
 import {
-  DateRangeQueryDto,
   OverallSummaryDto,
+  PeriodAnalyticsDto,
+  QueryDto,
   WalletSummaryDto,
 } from './dto/analytics.dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
@@ -72,7 +73,7 @@ export class AnalyticsService {
     start?: Date,
     end?: Date,
     walletId?: number,
-  ): Promise<any> {
+  ): Promise<PeriodAnalyticsDto> {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId, {
         startDate: start,
@@ -105,12 +106,29 @@ export class AnalyticsService {
   }
 
   //custom date range analytics
-  async customDateRangeAnalytics(
-    userId: number,
-    dto: DateRangeQueryDto,
-  ): Promise<any> {
+  async customDateRangeAnalytics(userId: number, dto: QueryDto): Promise<any> {
     const { start, end } = DateRange.normalizeDates(dto);
     return this.customRangeAnalytics(userId, start, end);
+  }
+
+  /* category analytics */
+  async categoryBreakdown(userId: number, dto: QueryDto): Promise<any> {
+    const { start, end } = DateRange.normalizeDates(dto);
+    const walletId = dto.walletId;
+    const breakdown = await this.analyticsRepository.sumByCategory(userId, {
+      walletId,
+      startDate: start,
+      endDate: end,
+    });
+    return breakdown.map((b) =>
+      AnalyticsMapper.toCategoryBreakdown(
+        b.categoryId,
+        b.name,
+        b.type,
+        b.total,
+        b.count,
+      ),
+    );
   }
 }
 

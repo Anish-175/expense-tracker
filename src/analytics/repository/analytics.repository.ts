@@ -105,4 +105,48 @@ export class AnalyticsRepository {
 
     return qb.getMany();
   }
+
+  /* sum by category */
+  async sumByCategory(
+    userId: number,
+    { walletId, startDate, endDate }: AnalyticsFilters = {},
+  ) {
+    const qb = this.transactionRepository
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.category', 'c')
+      .select('c.id', 'categoryId')
+      .addSelect('c.name', 'categoryName')
+      .addSelect('c.type', 'categoryType')
+      .addSelect('SUM(t.amount)', 'total')
+      .addSelect('COUNT(*)', 'count')
+      .where('t.userId = :userId', { userId });
+
+    // wallet filter
+    if (walletId !== undefined)
+      qb.andWhere('t.walletId = :walletId', { walletId });
+
+    // date filters
+    if (startDate && endDate) {
+      qb.andWhere('t.date BETWEEN :start AND :end', {
+        start: startDate,
+        end: endDate,
+      });
+    } else if (startDate) {
+      qb.andWhere('t.date >= :start', { start: startDate });
+    } else if (endDate) {
+      qb.andWhere('t.date <= :end', { end: endDate });
+    }
+
+    qb.groupBy('c.id');
+
+    const result = await qb.getRawMany();
+
+    return result.map((r) => ({
+      categoryId: r.categoryId,
+      name: r.categoryName,
+      type: r.categoryType,
+      total: Number(r.total),
+      count: Number(r.count),
+    }));
+  }
 }
