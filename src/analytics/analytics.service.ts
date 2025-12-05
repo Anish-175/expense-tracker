@@ -6,7 +6,12 @@ import { Wallet } from '../wallet/entities/wallet.entity';
 import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
-import { OverallSummaryDto, WalletSummaryDto } from './dto/analytics.dto';
+import {
+  DateRangeQueryDto,
+  OverallSummaryDto,
+  WalletSummaryDto,
+} from './dto/analytics.dto';
+import { AnalyticsMapper } from './mapper/analytics.mapper';
 
 @Injectable()
 export class AnalyticsService {
@@ -51,25 +56,66 @@ export class AnalyticsService {
       order: { date: 'DESC' },
     });
 
-    return {
-      walletId: walletId,
-      totalIncome: income,
-      totalExpense: expense,
-      initial_balance: initial_balance,
-      currentBalance: initial_balance + income - expense,
-      transactions: transactions.map((tx) => ({
-        id: tx.id,
-        type: tx.type,
-        amount: Number(tx.amount),
-        date: tx.date,
-        description: tx.description,
-      })),
-    };
+    return AnalyticsMapper.toWalletAnalytics(
+      walletId,
+      income,
+      expense,
+      initial_balance,
+      transactions,
+    );
+  }
 
-    /*daily analytics */
+  /* Date range analytics */
 
-    /* weekly analytics */
+  /*custom range analytics helper */
+  async customRangeAnalytics(
+    userId: number,
+    start?: Date,
+    end?: Date,
+    walletId?: number,
+  ): Promise<any> {
+    const { income, expense } =
+      await this.analyticsRepository.sumIncomeAndExpense(
+        userId,
+        undefined,
+        start,
+        end,
+      );
+    const transactions =
+      await this.analyticsRepository.getTransactionsByDateRange(
+        userId,
+        start,
+        end,
+      );
+    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
+  }
 
-    /* */
+  //daily analytics
+  async dailyAnalytics(userId: number): Promise<any> {
+    const { start, end } = DateRange.fromPreset('today');
+    return this.customRangeAnalytics(userId, start, end);
+  }
+
+  //weekly analytics
+  async weeklyAnalytics(userId: number): Promise<any> {
+    const { start, end } = DateRange.fromPreset('week');
+    return this.customRangeAnalytics(userId, start, end);
+  }
+
+  //monthly analytics
+  async monthlyAnalytics(userid: number): Promise<any> {
+    const { start, end } = DateRange.fromPreset('month');
+    return this.customRangeAnalytics(userid, start, end);
+  }
+
+  //custom date range analytics
+  async customDateRangeAnalytics(
+    userId: number,
+    dto: DateRangeQueryDto,
+  ): Promise<any> {
+    const { start, end } = DateRange.normalizeDates(dto);
+    return this.customRangeAnalytics(userId, start, end);
   }
 }
+
+/* */
