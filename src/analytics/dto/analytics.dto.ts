@@ -21,9 +21,12 @@ export class WalletSummaryDto {
 
 //output dto for period analytics responses(daily, weekly, monthly, custom)
 export class PeriodAnalyticsDto {
+  periodStart?: Date;
+  periodEnd?: Date;
   income: number;
   expense: number;
-  profit: number;
+  netProfit: number;
+  transactionsCount: number;
   transactions: TransactionSummaryDto[];
 }
 
@@ -39,7 +42,9 @@ export class TrendPointDto {
   period: string;
   income: number;
   expense: number;
+  netProfit: number;
 }
+
 
 //input dto for queries
 export class QueryDto {
@@ -61,3 +66,5 @@ export interface AnalyticsFilters {
   startDate?: Date;
   endDate?: Date;
 }
+
+

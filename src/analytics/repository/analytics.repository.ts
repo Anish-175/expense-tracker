@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Transaction,
@@ -18,6 +18,14 @@ export class AnalyticsRepository {
     private walletRepository: Repository<Wallet>,
   ) {}
 
+  /*fetch a wallet */
+  async fetchWalletById(walletId: number): Promise<Wallet> {
+    const wallet = await this.walletRepository.findOne({
+      where: { id: walletId },
+    });
+    if (!wallet) throw new NotFoundException(`Wallet ${walletId} not found`);
+    return wallet;
+  }
   /* sum of income and expenses */
   async sumIncomeAndExpense(
     userId: number,
@@ -100,7 +108,6 @@ export class AnalyticsRepository {
     } else if (endDate) {
       qb.andWhere('t.date <= :end', { end: endDate });
     }
-
     qb.orderBy('t.date', 'DESC');
 
     return qb.getMany();
@@ -137,16 +144,57 @@ export class AnalyticsRepository {
       qb.andWhere('t.date <= :end', { end: endDate });
     }
 
-    qb.groupBy('c.id');
+    qb.groupBy('c.id, c.type');
 
     const result = await qb.getRawMany();
 
-    return result.map((r) => ({
-      categoryId: r.categoryId,
-      name: r.categoryName,
-      type: r.categoryType,
-      total: Number(r.total),
-      count: Number(r.count),
-    }));
+    return result;
+  }
+
+  
+  /* trend data by period */
+  async trendByPeriod(
+    userId: number,
+    period: 'daily' | 'weekly' | 'monthly',
+    count: number,
+  ) {
+    let groupByExpr: string;
+    let intervalExpr: string;
+
+    switch (period) {
+      case 'daily':
+        groupByExpr = `TO_CHAR(t.date, 'YYYY-MM-DD')`;
+        intervalExpr = `:count * INTERVAL '1 day'`;
+        break;
+      case 'weekly':
+        groupByExpr = `TO_CHAR(DATE_TRUNC('week', t.date), 'YYYY-MM-DD')`;
+        intervalExpr = `:count * INTERVAL '1 week'`;
+        break;
+      case 'monthly':
+        groupByExpr = `TO_CHAR(DATE_TRUNC('month', t.date), 'YYYY-MM')`;
+        intervalExpr = `:count * INTERVAL '1 month'`;
+        break;
+      default:
+        throw new Error('Invalid period');
+    }
+
+    const qb = this.transactionRepository
+      .createQueryBuilder('t')
+      .select(`${groupByExpr}`, 'period')
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN t.type = 'income' THEN t.amount END), 0)`,
+        'income',
+      )
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount END), 0)`,
+        'expense',
+      )
+      .where('t.userId = :userId', { userId })
+      .andWhere(`t.date >= NOW() - (${intervalExpr})`, { count })
+      .andWhere('t.deleted_at IS NULL')
+      .groupBy('period')
+      .orderBy('period', 'ASC');
+
+    return qb.getRawMany();
   }
 }

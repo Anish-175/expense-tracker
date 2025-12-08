@@ -6,9 +6,11 @@ import { Wallet } from '../wallet/entities/wallet.entity';
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
 import {
+  CategoryBreakdownDto,
   OverallSummaryDto,
   PeriodAnalyticsDto,
   QueryDto,
+  TrendPointDto,
   WalletSummaryDto,
 } from './dto/analytics.dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
@@ -23,7 +25,36 @@ export class AnalyticsService {
     private readonly analyticsRepository: AnalyticsRepository,
   ) {}
 
-  /* Overall summary*/
+  /*Helper methods */
+
+ // Custom range analytics
+  async customRangeAnalytics(
+    userId: number,
+    start?: Date,
+    end?: Date,
+  ): Promise<PeriodAnalyticsDto> {
+    const { income, expense } =
+      await this.analyticsRepository.sumIncomeAndExpense(userId, {
+        startDate: start,
+        endDate: end,
+      });
+    const transactions =
+      await this.analyticsRepository.getTransactionsByDateRange(userId, {
+        startDate: start,
+        endDate: end,
+      });
+    return AnalyticsMapper.toPeriodAnalytics(
+      income,
+      expense,
+      transactions,
+      start,
+      end,
+    );
+  }
+
+  /* Dashboard analytics */
+
+  // overall summary
   async overallSummary(userId: number): Promise<OverallSummaryDto> {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId);
@@ -36,7 +67,7 @@ export class AnalyticsService {
     };
   }
 
-  /*wallet summary */
+// wallet summary
   async walletSummary(
     userId: number,
     walletId: number,
@@ -44,10 +75,7 @@ export class AnalyticsService {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId, { walletId });
 
-    const wallet = await this.walletRepository.findOne({
-      where: { id: walletId },
-    });
-    if (!wallet) throw new NotFoundException(`Wallet ${walletId} not found`);
+    const wallet = await this.analyticsRepository.fetchWalletById(walletId);
 
     const initial_balance = Number(wallet.initial_balance);
 
@@ -65,27 +93,8 @@ export class AnalyticsService {
     );
   }
 
-  /* Date range analytics */
 
-  /*custom range analytics helper */
-  async customRangeAnalytics(
-    userId: number,
-    start?: Date,
-    end?: Date,
-    walletId?: number,
-  ): Promise<PeriodAnalyticsDto> {
-    const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(userId, {
-        startDate: start,
-        endDate: end,
-      });
-    const transactions =
-      await this.analyticsRepository.getTransactionsByDateRange(userId, {
-        startDate: start,
-        endDate: end,
-      });
-    return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
-  }
+  /*Period analytics */
 
   //daily analytics
   async dailyAnalytics(userId: number): Promise<any> {
@@ -111,25 +120,66 @@ export class AnalyticsService {
     return this.customRangeAnalytics(userId, start, end);
   }
 
+  /* Trend analytics */
+
+  //daily trend
+  async dailyTrendAnalytics(
+    userId: number,
+    days: number,
+  ): Promise<TrendPointDto[]> {
+    const rawData = await this.analyticsRepository.trendByPeriod(
+      userId,
+      'daily',
+      days,
+    );
+    return rawData.map((r) => AnalyticsMapper.toTrendData(r));
+  }
+
+//weekly trend
+  async weeklyTrendAnalytics(
+    userId: number,
+    weeks: number,
+  ): Promise<TrendPointDto[]> {
+    const rawData = await this.analyticsRepository.trendByPeriod(
+      userId,
+      'weekly',
+      weeks,
+    );
+    return rawData.map((r) => AnalyticsMapper.toTrendData(r));
+  }
+
+  //monthly trend
+  async monthlyTrendAnalytics(
+    userId: number,
+    months: number,
+  ): Promise<TrendPointDto[]> {
+    const rawData = await this.analyticsRepository.trendByPeriod(
+      userId,
+      'monthly',
+      months,
+    );
+    return rawData.map((r) => AnalyticsMapper.toTrendData(r));
+  }
+
+
   /* category analytics */
-  async categoryBreakdown(userId: number, dto: QueryDto): Promise<any> {
+
+  //category breakdown
+  async categoryBreakdown(
+    userId: number,
+    dto: QueryDto,
+  ): Promise<CategoryBreakdownDto[]> {
     const { start, end } = DateRange.normalizeDates(dto);
     const walletId = dto.walletId;
-    const breakdown = await this.analyticsRepository.sumByCategory(userId, {
+    const raw = await this.analyticsRepository.sumByCategory(userId, {
       walletId,
       startDate: start,
       endDate: end,
     });
-    return breakdown.map((b) =>
-      AnalyticsMapper.toCategoryBreakdown(
-        b.categoryId,
-        b.name,
-        b.type,
-        b.total,
-        b.count,
-      ),
-    );
+    return raw.map((r) => AnalyticsMapper.toCategoryBreakdown(r));
   }
+
+
 }
 
 /* */

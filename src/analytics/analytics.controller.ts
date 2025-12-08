@@ -11,13 +11,20 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { AnalyticsService } from 'src/analytics/analytics.service';
-import {  OverallSummaryDto, QueryDto, WalletSummaryDto } from './dto/analytics.dto';
+import {
+  CategoryBreakdownDto,
+  OverallSummaryDto,
+  QueryDto,
+  TrendPointDto,
+  WalletSummaryDto,
+} from './dto/analytics.dto';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
+  // API to get overall summary(income, expense, balance)
   @Get('overall/summary')
   async overallSummary(
     @CurrentUser() user: CurrentUserPayload,
@@ -25,6 +32,7 @@ export class AnalyticsController {
     return await this.analyticsService.overallSummary(user.userId);
   }
 
+  // API to get wallet summary(income, expense, balance, transactions)
   @Get('wallet/:id/summary')
   async walletSummary(
     @CurrentUser() user: CurrentUserPayload,
@@ -33,6 +41,7 @@ export class AnalyticsController {
     return await this.analyticsService.walletSummary(user.userId, walletId);
   }
 
+  /*  API to get period analytics - daily, weekly, monthly, custom range */
   @Get('daily')
   async dailyAnalytics(@CurrentUser() user: CurrentUserPayload): Promise<any> {
     return await this.analyticsService.dailyAnalytics(user.userId);
@@ -50,17 +59,52 @@ export class AnalyticsController {
     return await this.analyticsService.monthlyAnalytics(user.userId);
   }
 
-    @Post('custom')
-    async customRangeAnalytics(
-      @CurrentUser() user: CurrentUserPayload, @Body() dto:QueryDto
-    ): Promise<any> {
-      return await this.analyticsService.customDateRangeAnalytics(user.userId, dto);
+  @Post('custom')
+  async customRangeAnalytics(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: QueryDto,
+  ): Promise<any> {
+    return await this.analyticsService.customDateRangeAnalytics(
+      user.userId,
+      dto,
+    );
   }
-  
+
+
+  /*API to get Trend analytics */
+  @Get('trend/daily/:days')
+  async dailyTrendAnalytics(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('days', new ParseIntPipe()) days: number,
+  ): Promise<TrendPointDto[]> {
+    return await this.analyticsService.dailyTrendAnalytics(user.userId, days);
+  }
+
+  @Get('trend/weekly/:weeks')
+  async weeklyTrendAnalytics(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('weeks', new ParseIntPipe()) weeks: number,
+  ): Promise<TrendPointDto[]> {
+    return await this.analyticsService.weeklyTrendAnalytics(user.userId, weeks);
+  }
+
+  @Get('trend/monthly/:months')
+  async monthlyTrendAnalytics(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('months', new ParseIntPipe()) months: number,
+  ): Promise<TrendPointDto[]> {
+    return await this.analyticsService.monthlyTrendAnalytics(user.userId, months);
+  }
+
+
+  /* API to get category analytics */
   @Post('category-breakdown')
   async categoryBreakdown(
-    @CurrentUser() user: CurrentUserPayload, @Body() dto:QueryDto
-  ): Promise<any> {
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: QueryDto,
+  ): Promise<CategoryBreakdownDto[]> {
     return await this.analyticsService.categoryBreakdown(user.userId, dto);
   }
+
+  
 }
