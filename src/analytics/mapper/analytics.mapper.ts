@@ -1,6 +1,7 @@
 import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { TransactionMapper } from 'src/transaction/mappers/transaction.mapper';
 import { PeriodAnalyticsDto, WalletSummaryDto } from '../dto/analytics.dto';
+import { CategoryType } from 'src/category/entities/category.entity';
 
 export class AnalyticsMapper {
   static toPeriodAnalytics(
@@ -30,6 +31,22 @@ export class AnalyticsMapper {
       initial_balance: initial_balance,
       currentBalance: initial_balance + income - expense,
       transactions: transactions.map(TransactionMapper.toDto),
+    };
+  }
+
+  static toCategoryBreakdown(
+    categoryId: number,
+    categoryName: string,
+    type: CategoryType,
+    total: number,
+    count: number,
+  ) {
+    return {
+      categoryId: categoryId,
+      categoryName: categoryName,
+      type: type,
+      total: total,
+      count: count,
     };
   }
 }

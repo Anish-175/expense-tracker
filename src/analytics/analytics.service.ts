@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
-import { Transaction } from '../transaction/entities/transaction.entity'; // Adjust path
+import { Repository } from 'typeorm';
+import { Transaction } from '../transaction/entities/transaction.entity';
 import { Wallet } from '../wallet/entities/wallet.entity';
-import { TransactionType } from '../transaction/entities/transaction.entity'; // For enums
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
 import {
-  DateRangeQueryDto,
   OverallSummaryDto,
+  PeriodAnalyticsDto,
+  QueryDto,
   WalletSummaryDto,
 } from './dto/analytics.dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
@@ -42,7 +42,7 @@ export class AnalyticsService {
     walletId: number,
   ): Promise<WalletSummaryDto> {
     const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(userId, walletId);
+      await this.analyticsRepository.sumIncomeAndExpense(userId, { walletId });
 
     const wallet = await this.walletRepository.findOne({
       where: { id: walletId },
@@ -51,10 +51,10 @@ export class AnalyticsService {
 
     const initial_balance = Number(wallet.initial_balance);
 
-    const transactions = await this.transactionRepository.find({
-      where: { wallet: { id: walletId }, user: { id: userId } },
-      order: { date: 'DESC' },
-    });
+    const transactions =
+      await this.analyticsRepository.getTransactionsByDateRange(userId, {
+        walletId,
+      });
 
     return AnalyticsMapper.toWalletAnalytics(
       walletId,
@@ -73,20 +73,17 @@ export class AnalyticsService {
     start?: Date,
     end?: Date,
     walletId?: number,
-  ): Promise<any> {
+  ): Promise<PeriodAnalyticsDto> {
     const { income, expense } =
-      await this.analyticsRepository.sumIncomeAndExpense(
-        userId,
-        undefined,
-        start,
-        end,
-      );
+      await this.analyticsRepository.sumIncomeAndExpense(userId, {
+        startDate: start,
+        endDate: end,
+      });
     const transactions =
-      await this.analyticsRepository.getTransactionsByDateRange(
-        userId,
-        start,
-        end,
-      );
+      await this.analyticsRepository.getTransactionsByDateRange(userId, {
+        startDate: start,
+        endDate: end,
+      });
     return AnalyticsMapper.toPeriodAnalytics(income, expense, transactions);
   }
 
@@ -109,12 +106,29 @@ export class AnalyticsService {
   }
 
   //custom date range analytics
-  async customDateRangeAnalytics(
-    userId: number,
-    dto: DateRangeQueryDto,
-  ): Promise<any> {
+  async customDateRangeAnalytics(userId: number, dto: QueryDto): Promise<any> {
     const { start, end } = DateRange.normalizeDates(dto);
     return this.customRangeAnalytics(userId, start, end);
+  }
+
+  /* category analytics */
+  async categoryBreakdown(userId: number, dto: QueryDto): Promise<any> {
+    const { start, end } = DateRange.normalizeDates(dto);
+    const walletId = dto.walletId;
+    const breakdown = await this.analyticsRepository.sumByCategory(userId, {
+      walletId,
+      startDate: start,
+      endDate: end,
+    });
+    return breakdown.map((b) =>
+      AnalyticsMapper.toCategoryBreakdown(
+        b.categoryId,
+        b.name,
+        b.type,
+        b.total,
+        b.count,
+      ),
+    );
   }
 }
 

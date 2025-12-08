@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Transaction } from './entities/transaction.entity';
+import { Transaction, TransactionType } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
-import { Category } from 'src/category/entities/category.entity';
+import { Category, CategoryType } from 'src/category/entities/category.entity';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 import { plainToInstance } from 'class-transformer';
 
@@ -26,33 +26,81 @@ export class TransactionService {
     private categoryRepository: Repository<Category>,
   ) {}
 
+  /* Helper methods */
+  private mapTransactionToCategory(type: TransactionType): CategoryType {
+    switch (type) {
+      case TransactionType.INCOME:
+        return CategoryType.INCOME;
+      case TransactionType.EXPENSE:
+        return CategoryType.EXPENSE;
+      default:
+        throw new Error('Transaction type cannot be mapped to a category');
+    }
+  }
+
+  //Validate category ownership
+  async validateCategoryOwnership(
+    createTransactionDto: CreateTransactionDto,
+    user: CurrentUserPayload,
+  ): Promise<void> {
+    let category: Category | null;
+    if (createTransactionDto.categoryId) {
+      category = await this.categoryRepository.findOne({
+        where: { id: createTransactionDto.categoryId },
+        relations: ['user'],
+      });
+
+      // Category must exist and belong to user
+      if (!category) throw new NotFoundException('Category not found');
+      if (category.user && category.user.id !== user.userId) {
+        throw new ForbiddenException('You do not own this category');
+      }
+
+      // Transfer transactions cannot have a category
+      if (createTransactionDto.type === TransactionType.TRANSFER) {
+        throw new ForbiddenException(
+          'Transfer transactions cannot have a category',
+        );
+      }
+
+      // Category type must match transaction type
+      if (
+        category.type !==
+        this.mapTransactionToCategory(createTransactionDto.type)
+      ) {
+        throw new ForbiddenException(
+          `Category type ${category.type} does not match transaction type ${createTransactionDto.type}`,
+        );
+      }
+    }
+  }
+
+  //Validate wallet ownership
+  async validateWalletOwnership(
+    createTransactionDto: CreateTransactionDto,
+    user: CurrentUserPayload,
+  ): Promise<void> {
+    const wallet = await this.walletRepository.findOne({
+      where: { id: createTransactionDto.walletId },
+      relations: ['user'],
+    });
+    if (!wallet) throw new NotFoundException('Wallet not found');
+    if (wallet.user && wallet.user.id !== user.userId) {
+      throw new ForbiddenException('You do not own this wallet');
+    }
+  }
+
+  //create transaction
   async create(
     createTransactionDto: CreateTransactionDto,
     user: CurrentUserPayload,
   ): Promise<TransactionResponseDto> {
     try {
       // Validate wallet ownership
-      const wallet = await this.walletRepository.findOne({
-        where: { id: createTransactionDto.walletId },
-        relations: ['user'],
-      });
-      if (!wallet) throw new NotFoundException('Wallet not found');
-      if (wallet.user && wallet.user.id !== user.userId) {
-        throw new ForbiddenException('You do not own this wallet');
-      }
+      await this.validateWalletOwnership(createTransactionDto, user);
 
       // Validate category ownership (if provided)
-      let category: Category | null;
-      if (createTransactionDto.categoryId) {
-        category = await this.categoryRepository.findOne({
-          where: { id: createTransactionDto.categoryId },
-          relations: ['user'],
-        });
-        if (!category) throw new NotFoundException('Category not found');
-        if (category.user && category.user.id !== user.userId) {
-          throw new ForbiddenException('You do not own this category');
-        }
-      }
+      await this.validateCategoryOwnership(createTransactionDto, user);
 
       // Create transaction
       const transaction = this.transactionRepository.create({
@@ -74,6 +122,9 @@ export class TransactionService {
     }
   }
 
+  /*CRUD Methods */
+  
+  //find all transactions
   async findAll(user: CurrentUserPayload): Promise<TransactionResponseDto[]> {
     try {
       const transaction = await this.transactionRepository.find({
@@ -93,6 +144,7 @@ export class TransactionService {
     }
   }
 
+  //find one transaction
   async findOne(
     id: number,
     user: CurrentUserPayload,
@@ -123,6 +175,7 @@ export class TransactionService {
     }
   }
 
+  //update transaction
   async update(
     id: number,
     updateTransactionDto: UpdateTransactionDto,
@@ -131,34 +184,27 @@ export class TransactionService {
     try {
       const transaction = await this.findOne(id, user);
 
-      // Optionally validate wallet/category ownership if updating those fields
+      // Optionally validate wallet ownership if updating those fields
       if (
         updateTransactionDto.walletId &&
         updateTransactionDto.walletId !== transaction.walletId
       ) {
-        const wallet = await this.walletRepository.findOne({
-          where: { id: updateTransactionDto.walletId },
-          relations: ['user'],
-        });
-        if (!wallet) throw new NotFoundException('Wallet not found');
-        if (wallet.user && wallet.user.id !== user.userId) {
-          throw new ForbiddenException('You do not own this wallet');
-        }
+        await this.validateWalletOwnership(
+          { ...transaction, ...updateTransactionDto } as CreateTransactionDto,
+          user,
+        );
       }
+      // Category validation on update
       if (
         updateTransactionDto.categoryId &&
         updateTransactionDto.categoryId !== transaction.categoryId
       ) {
-        const category = await this.categoryRepository.findOne({
-          where: { id: updateTransactionDto.categoryId },
-          relations: ['user'],
-        });
-        if (!category) throw new NotFoundException('Category not found');
-        if (category.user && category.user.id !== user.userId) {
-          throw new ForbiddenException('You do not own this category');
-        }
+        await this.validateCategoryOwnership(
+          { ...transaction, ...updateTransactionDto } as CreateTransactionDto,
+          user,
+        );
       }
-
+      // Merge existing transaction with updates
       Object.assign(transaction, updateTransactionDto);
       const savedTransaction =
         await this.transactionRepository.save(transaction);
@@ -177,6 +223,7 @@ export class TransactionService {
     }
   }
 
+  //remove transaction
   async remove(
     id: number,
     user: CurrentUserPayload,
