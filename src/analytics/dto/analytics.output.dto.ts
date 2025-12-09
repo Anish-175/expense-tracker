@@ -2,7 +2,7 @@ import { IsOptional, IsDateString } from 'class-validator';
 import { CategoryType } from 'src/category/entities/category.entity';
 import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.dto';
 
-//output dto for overall analytics responses
+// overall summary dto
 export class OverallSummaryDto {
   totalIncome: number;
   totalExpense: number;
@@ -10,7 +10,7 @@ export class OverallSummaryDto {
   currentNetBalance: number;
 }
 
-//output dto for wallet analytics responses
+//wallet summary dto
 export class WalletSummaryDto {
   walletId: number;
   totalExpense: number;
@@ -20,6 +20,7 @@ export class WalletSummaryDto {
   transactions: TransactionSummaryDto[];
 }
 
+//wallets overview dto
 export class walletsOverviewDto {
   walletId: number;
   walletName: string
@@ -29,7 +30,7 @@ export class walletsOverviewDto {
   totalExpense: number;
 }
 
-//output dto for period analytics responses(daily, weekly, monthly, custom)
+//Period analytics responses(daily, weekly, monthly, custom)
 export class PeriodAnalyticsDto {
   periodStart?: Date;
   periodEnd?: Date;
@@ -40,6 +41,7 @@ export class PeriodAnalyticsDto {
   transactions: TransactionSummaryDto[];
 }
 
+//category breakdown dto
 export class CategoryBreakdownDto {
   categoryId: number;
   categoryName: string;
@@ -48,6 +50,7 @@ export class CategoryBreakdownDto {
   count: number;
 }
 
+//trend point dto
 export class TrendPointDto {
   period: string;
   income: number;
@@ -56,25 +59,5 @@ export class TrendPointDto {
 }
 
 
-//input dto for queries
-export class QueryDto {
-  @IsOptional()
-  @IsDateString()
-  startDate?: string;
-
-  @IsOptional()
-  @IsDateString()
-  endDate?: string;
-
-  @IsOptional()
-  walletId?: number;
-}
-
-//input dto for analytics filters
-export interface AnalyticsFilters {
-  walletId?: number;
-  startDate?: Date;
-  endDate?: Date;
-}
 
 

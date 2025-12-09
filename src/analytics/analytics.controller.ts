@@ -18,7 +18,7 @@ import {
   TrendPointDto,
   walletsOverviewDto,
   WalletSummaryDto,
-} from './dto/analytics.dto';
+} from 'src/analytics/dto';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
@@ -78,7 +78,6 @@ export class AnalyticsController {
     );
   }
 
-
   /*API to get Trend analytics */
   @Get('trend/daily/:days')
   async dailyTrendAnalytics(
@@ -101,9 +100,11 @@ export class AnalyticsController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('months', new ParseIntPipe()) months: number,
   ): Promise<TrendPointDto[]> {
-    return await this.analyticsService.monthlyTrendAnalytics(user.userId, months);
+    return await this.analyticsService.monthlyTrendAnalytics(
+      user.userId,
+      months,
+    );
   }
-
 
   /* API to get category analytics */
   @Post('category-breakdown')
@@ -113,6 +114,4 @@ export class AnalyticsController {
   ): Promise<CategoryBreakdownDto[]> {
     return await this.analyticsService.categoryBreakdown(user.userId, dto);
   }
-
-  
 }

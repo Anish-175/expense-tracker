@@ -6,8 +6,11 @@ import {
 } from 'src/transaction/entities/transaction.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Repository } from 'typeorm';
-import { DateRange } from '../utils/date-helpers';
-import { AnalyticsFilters, walletsOverviewDto } from '../dto/analytics.dto';
+import {
+  walletsOverviewDto,
+  AnalyticsFilters,
+} from 'src/analytics/dto';
+
 
 @Injectable()
 export class AnalyticsRepository {
@@ -102,7 +105,9 @@ export class AnalyticsRepository {
   }
 
   /* sum of income and expense grouped by wallets */
-  async sumIncomeExpenseByAllWallets(userId: number): Promise<walletsOverviewDto[]> {
+  async sumIncomeExpenseByAllWallets(
+    userId: number,
+  ): Promise<walletsOverviewDto[]> {
     const qb = this.walletRepository
       .createQueryBuilder('w')
       .leftJoin(Transaction, 't', 't.walletId = w.id AND t.deleted_at IS NULL')

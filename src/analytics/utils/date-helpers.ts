@@ -1,4 +1,4 @@
-import { QueryDto } from "../dto/analytics.dto";
+import { QueryDto } from 'src/analytics/dto';
 
 export class DateRange {
   //get today's date range
@@ -132,4 +132,3 @@ export class DateRange {
     }
   }
 }
-

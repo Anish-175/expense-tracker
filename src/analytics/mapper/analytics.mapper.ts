@@ -6,7 +6,7 @@ import {
   TrendPointDto,
   walletsOverviewDto,
   WalletSummaryDto,
-} from '../dto/analytics.dto';
+} from '../dto/analytics.output.dto';
 export class AnalyticsMapper {
   static toPeriodAnalytics(
     income: number,
@@ -50,7 +50,8 @@ export class AnalyticsMapper {
       initialBalance: Number(raw.initialBalance),
       totalIncome: Number(raw.income),
       totalExpense: Number(raw.expense),
-      currentBalance: Number(raw.initialBalance) + Number(raw.income) - Number(raw.expense),
+      currentBalance:
+        Number(raw.initialBalance) + Number(raw.income) - Number(raw.expense),
     };
   }
 

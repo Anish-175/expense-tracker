@@ -13,7 +13,7 @@ import {
   TrendPointDto,
   walletsOverviewDto,
   WalletSummaryDto,
-} from './dto/analytics.dto';
+} from 'src/analytics/dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class AnalyticsService {
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
     private readonly analyticsRepository: AnalyticsRepository,
-  ) {}
+  ) { }
 
   /*Helper methods */
 
@@ -69,7 +69,8 @@ export class AnalyticsService {
     };
   }
 
-  // wallet summary
+  /*wallet analytics */
+  // individual wallet summary
   async walletSummary(
     userId: number,
     walletId: number,
@@ -95,7 +96,7 @@ export class AnalyticsService {
     );
   }
 
-  // wallets overview
+  // all wallets overview
   async walletOverview(userId: number): Promise<walletsOverviewDto[]> {
     const walletsSummary =
       await this.analyticsRepository.sumIncomeExpenseByAllWallets(userId);
@@ -103,7 +104,6 @@ export class AnalyticsService {
   }
 
   /*Period analytics */
-
   //daily analytics
   async dailyAnalytics(userId: number): Promise<any> {
     const { start, end } = DateRange.fromPreset('today');
@@ -129,7 +129,6 @@ export class AnalyticsService {
   }
 
   /* Trend analytics */
-
   //daily trend
   async dailyTrendAnalytics(
     userId: number,
@@ -185,6 +184,10 @@ export class AnalyticsService {
     });
     return raw.map((r) => AnalyticsMapper.toCategoryBreakdown(r));
   }
-}
 
-/* */
+  //period comparison analytics
+ 
+  }
+
+
+
