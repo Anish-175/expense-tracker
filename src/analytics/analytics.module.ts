@@ -13,7 +13,7 @@ import { User } from 'src/user/entities/user.entity';
   imports: [
     TypeOrmModule.forFeature([Transaction, Wallet, User]),
   ],
-  providers: [AnalyticsService, AnalyticsRepository, WalletService],
+  providers: [AnalyticsService, AnalyticsRepository],
   controllers: [AnalyticsController],
 })
 export class AnalyticsModule {}

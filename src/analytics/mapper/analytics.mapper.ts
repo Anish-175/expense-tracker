@@ -1,18 +1,26 @@
 import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { TransactionMapper } from 'src/transaction/mappers/transaction.mapper';
-import { PeriodAnalyticsDto, WalletSummaryDto } from '../dto/analytics.dto';
-import { CategoryType } from 'src/category/entities/category.entity';
-
+import {
+  CategoryBreakdownDto,
+  PeriodAnalyticsDto,
+  TrendPointDto,
+  WalletSummaryDto,
+} from '../dto/analytics.dto';
 export class AnalyticsMapper {
   static toPeriodAnalytics(
     income: number,
     expense: number,
     transactions: Transaction[],
+    start?: Date,
+    end?: Date,
   ): PeriodAnalyticsDto {
     return {
-      income,
-      expense,
-      profit: income - expense,
+      periodStart: start,
+      periodEnd: end,
+      income: income,
+      expense: expense,
+      netProfit: income - expense,
+      transactionsCount: transactions.length,
       transactions: transactions.map(TransactionMapper.toDto),
     };
   }
@@ -34,19 +42,22 @@ export class AnalyticsMapper {
     };
   }
 
-  static toCategoryBreakdown(
-    categoryId: number,
-    categoryName: string,
-    type: CategoryType,
-    total: number,
-    count: number,
-  ) {
+  static toCategoryBreakdown(raw: any): CategoryBreakdownDto {
     return {
-      categoryId: categoryId,
-      categoryName: categoryName,
-      type: type,
-      total: total,
-      count: count,
+      categoryId: Number(raw.categoryId),
+      categoryName: raw.categoryName,
+      type: raw.categoryType,
+      total: Number(raw.total),
+      count: Number(raw.count),
+    };
+  }
+
+  static toTrendData(raw: any): TrendPointDto {
+    return {
+      period: raw.period,
+      income: Number(raw.income),
+      expense: Number(raw.expense),
+      netProfit: Number(raw.income) - Number(raw.expense),
     };
   }
 }
