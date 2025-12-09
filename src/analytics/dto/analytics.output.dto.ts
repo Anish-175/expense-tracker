@@ -58,6 +58,18 @@ export class TrendPointDto {
   netProfit: number;
 }
 
+export class ComparePeriodDto {
+  currentIncome: number;
+  previousIncome: number;
+  incomeChange: number;
+  incomeChangePercent: number;
+
+  currentExpense: number;
+  previousExpense: number;
+  expenseChange: number;
+  expenseChangePercent: number;
+}
+
 
 
 

@@ -14,6 +14,7 @@ import { AnalyticsService } from 'src/analytics/analytics.service';
 import {
   CategoryBreakdownDto,
   OverallSummaryDto,
+  PeriodRangeDto,
   QueryDto,
   TrendPointDto,
   walletsOverviewDto,
@@ -24,6 +25,8 @@ import {
 @UseGuards(AuthGuard('jwt'))
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
+
+  /*API for Overall analytics */
 
   // API to get overall summary(income, expense, balance)
   @Get('overall/summary')
@@ -42,11 +45,29 @@ export class AnalyticsController {
     return await this.analyticsService.walletSummary(user.userId, walletId);
   }
 
+  //API to get wallet overview
   @Get('wallets/overview')
   async walletsOverview(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<walletsOverviewDto[]> {
     return await this.analyticsService.walletOverview(user.userId);
+  }
+
+  //API to get period comparision
+  @Post('compare-periods')
+  comparePeriods(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body()
+    dto: {
+      current: PeriodRangeDto;
+      previous: PeriodRangeDto;
+    },
+  ) {
+    return this.analyticsService.comparePeriods(
+      user.userId,
+      dto.current,
+      dto.previous,
+    );
   }
 
   /*  API to get period analytics - daily, weekly, monthly, custom range */

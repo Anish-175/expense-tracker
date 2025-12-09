@@ -7,8 +7,10 @@ import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
 import {
   CategoryBreakdownDto,
+  ComparePeriodDto,
   OverallSummaryDto,
   PeriodAnalyticsDto,
+  PeriodRangeDto,
   QueryDto,
   TrendPointDto,
   walletsOverviewDto,
@@ -24,7 +26,7 @@ export class AnalyticsService {
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
     private readonly analyticsRepository: AnalyticsRepository,
-  ) { }
+  ) {}
 
   /*Helper methods */
 
@@ -186,8 +188,32 @@ export class AnalyticsService {
   }
 
   //period comparison analytics
- 
-  }
+async comparePeriods(
+  userId: number,
+  current: PeriodRangeDto,
+  previous: PeriodRangeDto,
+): Promise<ComparePeriodDto> {
 
+  const currentRange = DateRange.normalizeDates({
+    startDate: current.start,
+    endDate: current.end,
+  });
+  const previousRange = DateRange.normalizeDates({
+    startDate: previous.start,
+    endDate: previous.end,
+  });
 
+  const currentData = await this.customRangeAnalytics(
+    userId,
+    currentRange.start,
+    currentRange.end,
+  );
+  const previousData = await this.customRangeAnalytics(
+    userId,
+    previousRange.start,
+    previousRange.end,
+  );
+  return AnalyticsMapper.toComparePeriods(currentData, previousData);
+}
 
+}

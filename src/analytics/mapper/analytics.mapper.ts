@@ -2,6 +2,7 @@ import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { TransactionMapper } from 'src/transaction/mappers/transaction.mapper';
 import {
   CategoryBreakdownDto,
+  ComparePeriodDto,
   PeriodAnalyticsDto,
   TrendPointDto,
   walletsOverviewDto,
@@ -72,5 +73,41 @@ export class AnalyticsMapper {
       expense: Number(raw.expense),
       netProfit: Number(raw.income) - Number(raw.expense),
     };
+  }
+
+  static toComparePeriods(
+    currentData: PeriodAnalyticsDto,
+    previousData: PeriodAnalyticsDto,
+  ): ComparePeriodDto {
+    return {
+      currentIncome: currentData.income,
+      previousIncome: previousData.income,
+      incomeChange: currentData.income - previousData.income,
+      incomeChangePercent: this.percentChange(
+        previousData.income,
+        currentData.income,
+      ),
+
+      currentExpense: currentData.expense,
+      previousExpense: previousData.expense,
+      expenseChange: currentData.expense - previousData.expense,
+      expenseChangePercent: this.percentChange(
+        previousData.expense,
+        currentData.expense,
+      ),
+    };
+  }
+
+  /*Helpers */
+
+  //percent change helper
+  private static percentChange(
+    previousValue: number,
+    currentValue: number,
+  ): number {
+    if (previousValue === 0) {
+      return currentValue === 0 ? 0 : 100;
+    }
+    return Math.round(((currentValue - previousValue) / Math.abs(previousValue)) * 10000)/100;
   }
 }
