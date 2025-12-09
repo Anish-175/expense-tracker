@@ -18,33 +18,13 @@ export class AnalyticsRepository {
     private walletRepository: Repository<Wallet>,
   ) {}
 
-  /*fetch a wallet */
-  async fetchWalletById(walletId: number): Promise<Wallet> {
-    const wallet = await this.walletRepository.findOne({
-      where: { id: walletId },
-    });
-    if (!wallet) throw new NotFoundException(`Wallet ${walletId} not found`);
-    return wallet;
-  }
-  /* sum of income and expenses */
-  async sumIncomeAndExpense(
-    userId: number,
-    { walletId, startDate, endDate }: AnalyticsFilters = {},
-  ): Promise<any> {
-    const qb = this.transactionRepository
-      .createQueryBuilder('t')
-      .select(
-        `
-      COALESCE(SUM(CASE WHEN t.type = :income THEN t.amount END), 0) AS income,
-      COALESCE(SUM(CASE WHEN t.type = :expense THEN t.amount END), 0) AS expense
-    `,
-      )
-      .where('t.userId = :userId', { userId })
-      .setParameters({
-        income: TransactionType.INCOME,
-        expense: TransactionType.EXPENSE,
-      });
-
+  //helper method to validate wallet and date filters
+  private applyWalletAndDateFilters(
+    qb: any,
+    walletId?: number,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
     //for wallet specific transactions
     if (walletId !== undefined)
       qb.andWhere('t.walletId = :walletId', { walletId });
@@ -60,6 +40,45 @@ export class AnalyticsRepository {
     } else if (endDate) {
       qb.andWhere('t.date <= :end', { end: endDate });
     }
+    //exclude soft deleted
+    qb.andWhere('t.deleted_at IS NULL');
+  }
+
+  /*fetch a wallet */
+  async fetchWalletById(walletId: number): Promise<Wallet> {
+    const wallet = await this.walletRepository.findOne({
+      where: { id: walletId },
+    });
+    if (!wallet) throw new NotFoundException(`Wallet ${walletId} not found`);
+    return wallet;
+  }
+
+  /* sum of income and expenses */
+  async sumIncomeAndExpense(
+    userId: number,
+    filters: AnalyticsFilters = {},
+  ): Promise<any> {
+    const qb = this.transactionRepository
+      .createQueryBuilder('t')
+      .select(
+        `
+      COALESCE(SUM(CASE WHEN t.type = :income THEN t.amount END), 0) AS income,
+      COALESCE(SUM(CASE WHEN t.type = :expense THEN t.amount END), 0) AS expense
+    `,
+      )
+      .where('t.userId = :userId', { userId })
+      .setParameters({
+        income: TransactionType.INCOME,
+        expense: TransactionType.EXPENSE,
+      });
+
+    // wallet and Date range filters
+    this.applyWalletAndDateFilters(
+      qb,
+      filters.walletId,
+      filters.startDate,
+      filters.endDate,
+    );
 
     const result = await qb.getRawOne();
 
@@ -71,53 +90,49 @@ export class AnalyticsRepository {
   }
 
   /* current Net balance(initial_balance + income - expense) for user */
-  async currentNetBalance(userId: number): Promise<number> {
-    const { totalInitialBalance = 0 } = await this.walletRepository
+  async totalInitialBalance(
+    userId: number,
+    walletId?: number,
+  ): Promise<number> {
+    const qb = await this.walletRepository
       .createQueryBuilder('w')
       .select('COALESCE(SUM(w.initial_balance), 0)', 'totalInitialBalance')
-      .where('w.userId = :userId', { userId })
-      .getRawOne();
+      .where('w.userId = :userId', { userId });
 
-    const { income = 0, expense = 0 } = await this.sumIncomeAndExpense(userId);
+    if (walletId !== undefined) {
+      //filter by walletId if provided
+      qb.andWhere('w.id = :walletId', { walletId });
+    }
 
-    return Number(totalInitialBalance) + Number(income) - Number(expense);
+    const totalInitialBalance = qb.getRawOne();
+    return Number(totalInitialBalance) || 0;
   }
 
   /* get transactions by a date range */
   async getTransactionsByDateRange(
     userId: number,
-    { walletId, startDate, endDate }: AnalyticsFilters = {},
+    filters: AnalyticsFilters = {},
   ): Promise<Transaction[]> {
     const qb = this.transactionRepository
       .createQueryBuilder('t')
       .where('t.userId = :userId', { userId });
 
-    // Optional wallet filter
-    if (walletId !== undefined) {
-      qb.andWhere('t.walletId = :walletId', { walletId });
-    }
+    // wallet and Date range filters
+    this.applyWalletAndDateFilters(
+      qb,
+      filters.walletId,
+      filters.startDate,
+      filters.endDate,
+    );
 
-    // Date range filters
-    if (startDate && endDate) {
-      qb.andWhere('t.date BETWEEN :start AND :end', {
-        start: startDate,
-        end: endDate,
-      });
-    } else if (startDate) {
-      qb.andWhere('t.date >= :start', { start: startDate });
-    } else if (endDate) {
-      qb.andWhere('t.date <= :end', { end: endDate });
-    }
     qb.orderBy('t.date', 'DESC');
+    qb.take(10);
 
     return qb.getMany();
   }
 
   /* sum by category */
-  async sumByCategory(
-    userId: number,
-    { walletId, startDate, endDate }: AnalyticsFilters = {},
-  ) {
+  async sumByCategory(userId: number, filters: AnalyticsFilters = {}) {
     const qb = this.transactionRepository
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.category', 'c')
@@ -128,30 +143,21 @@ export class AnalyticsRepository {
       .addSelect('COUNT(*)', 'count')
       .where('t.userId = :userId', { userId });
 
-    // wallet filter
-    if (walletId !== undefined)
-      qb.andWhere('t.walletId = :walletId', { walletId });
+    // wallet and Date range filters
+    this.applyWalletAndDateFilters(
+      qb,
+      filters.walletId,
+      filters.startDate,
+      filters.endDate,
+    );
 
-    // date filters
-    if (startDate && endDate) {
-      qb.andWhere('t.date BETWEEN :start AND :end', {
-        start: startDate,
-        end: endDate,
-      });
-    } else if (startDate) {
-      qb.andWhere('t.date >= :start', { start: startDate });
-    } else if (endDate) {
-      qb.andWhere('t.date <= :end', { end: endDate });
-    }
-
-    qb.groupBy('c.id, c.type');
+    qb.groupBy('c.id, c.type, c.name');
 
     const result = await qb.getRawMany();
 
     return result;
   }
 
-  
   /* trend data by period */
   async trendByPeriod(
     userId: number,
@@ -163,15 +169,15 @@ export class AnalyticsRepository {
 
     switch (period) {
       case 'daily':
-        groupByExpr = `TO_CHAR(t.date, 'YYYY-MM-DD')`;
+        groupByExpr = `DATE_TRUNC('day', t.date)`;
         intervalExpr = `:count * INTERVAL '1 day'`;
         break;
       case 'weekly':
-        groupByExpr = `TO_CHAR(DATE_TRUNC('week', t.date), 'YYYY-MM-DD')`;
+        groupByExpr = `DATE_TRUNC('week', t.date)`;
         intervalExpr = `:count * INTERVAL '1 week'`;
         break;
       case 'monthly':
-        groupByExpr = `TO_CHAR(DATE_TRUNC('month', t.date), 'YYYY-MM')`;
+        groupByExpr = `DATE_TRUNC('month', t.date)`;
         intervalExpr = `:count * INTERVAL '1 month'`;
         break;
       default:

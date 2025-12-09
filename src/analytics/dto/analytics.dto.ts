@@ -6,7 +6,8 @@ import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.d
 export class OverallSummaryDto {
   totalIncome: number;
   totalExpense: number;
-  currentBalance: number;
+  initialBalance: number;
+  currentNetBalance: number;
 }
 
 //output dto for wallet analytics responses

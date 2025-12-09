@@ -58,12 +58,13 @@ export class AnalyticsService {
   async overallSummary(userId: number): Promise<OverallSummaryDto> {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId);
-    const currentBalance =
-      await this.analyticsRepository.currentNetBalance(userId);
+    const initial_balance =
+      await this.analyticsRepository.totalInitialBalance(userId);
     return {
       totalIncome: income,
       totalExpense: expense,
-      currentBalance: currentBalance,
+      initialBalance: initial_balance,
+      currentNetBalance: initial_balance + income - expense,
     };
   }
 
