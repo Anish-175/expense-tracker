@@ -16,6 +16,7 @@ import {
   OverallSummaryDto,
   QueryDto,
   TrendPointDto,
+  walletsOverviewDto,
   WalletSummaryDto,
 } from './dto/analytics.dto';
 
@@ -39,6 +40,13 @@ export class AnalyticsController {
     @Param('id', new ParseIntPipe()) walletId: number,
   ): Promise<WalletSummaryDto> {
     return await this.analyticsService.walletSummary(user.userId, walletId);
+  }
+
+  @Get('wallets/overview')
+  async walletsOverview(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<walletsOverviewDto[]> {
+    return await this.analyticsService.walletOverview(user.userId);
   }
 
   /*  API to get period analytics - daily, weekly, monthly, custom range */

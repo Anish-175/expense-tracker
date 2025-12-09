@@ -4,6 +4,7 @@ import {
   CategoryBreakdownDto,
   PeriodAnalyticsDto,
   TrendPointDto,
+  walletsOverviewDto,
   WalletSummaryDto,
 } from '../dto/analytics.dto';
 export class AnalyticsMapper {
@@ -39,6 +40,17 @@ export class AnalyticsMapper {
       initial_balance: initial_balance,
       currentBalance: initial_balance + income - expense,
       transactions: transactions.map(TransactionMapper.toDto),
+    };
+  }
+
+  static toWalletsOverview(raw: any): walletsOverviewDto {
+    return {
+      walletId: Number(raw.walletId),
+      walletName: raw.walletName,
+      initialBalance: Number(raw.initialBalance),
+      totalIncome: Number(raw.income),
+      totalExpense: Number(raw.expense),
+      currentBalance: Number(raw.initialBalance) + Number(raw.income) - Number(raw.expense),
     };
   }
 

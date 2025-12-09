@@ -7,7 +7,7 @@ import {
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Repository } from 'typeorm';
 import { DateRange } from '../utils/date-helpers';
-import { AnalyticsFilters } from '../dto/analytics.dto';
+import { AnalyticsFilters, walletsOverviewDto } from '../dto/analytics.dto';
 
 @Injectable()
 export class AnalyticsRepository {
@@ -18,6 +18,7 @@ export class AnalyticsRepository {
     private walletRepository: Repository<Wallet>,
   ) {}
 
+  /*helper methods */
   //helper method to validate wallet and date filters
   private applyWalletAndDateFilters(
     qb: any,
@@ -48,6 +49,7 @@ export class AnalyticsRepository {
   async fetchWalletById(walletId: number): Promise<Wallet> {
     const wallet = await this.walletRepository.findOne({
       where: { id: walletId },
+      select: ['id', 'initial_balance'],
     });
     if (!wallet) throw new NotFoundException(`Wallet ${walletId} not found`);
     return wallet;
@@ -90,22 +92,37 @@ export class AnalyticsRepository {
   }
 
   /* current Net balance(initial_balance + income - expense) for user */
-  async totalInitialBalance(
-    userId: number,
-    walletId?: number,
-  ): Promise<number> {
-    const qb = await this.walletRepository
+  async getTotalInitialBalanceForUser(userId: number): Promise<number> {
+    const { totalInitialBalance } = await this.walletRepository
       .createQueryBuilder('w')
       .select('COALESCE(SUM(w.initial_balance), 0)', 'totalInitialBalance')
-      .where('w.userId = :userId', { userId });
-
-    if (walletId !== undefined) {
-      //filter by walletId if provided
-      qb.andWhere('w.id = :walletId', { walletId });
-    }
-
-    const totalInitialBalance = qb.getRawOne();
+      .where('w.userId = :userId', { userId })
+      .getRawOne();
     return Number(totalInitialBalance) || 0;
+  }
+
+  /* sum of income and expense grouped by wallets */
+  async sumIncomeExpenseByAllWallets(userId: number): Promise<walletsOverviewDto[]> {
+    const qb = this.walletRepository
+      .createQueryBuilder('w')
+      .leftJoin(Transaction, 't', 't.walletId = w.id AND t.deleted_at IS NULL')
+      .select('w.id', 'walletId')
+      .addSelect('w.initial_balance', 'initialBalance')
+      .addSelect('w.name', 'walletName')
+      .addSelect(
+        `
+      COALESCE(SUM(CASE WHEN t.type = :income THEN t.amount END), 0) AS "income",
+      COALESCE(SUM(CASE WHEN t.type = :expense THEN t.amount END), 0) AS "expense"
+    `,
+      )
+      .where('w.userId = :userId', { userId })
+      .andWhere('w.deleted_at IS NULL')
+      .setParameters({
+        income: TransactionType.INCOME,
+        expense: TransactionType.EXPENSE,
+      })
+      .groupBy('w.id, w.initial_balance, w.name'); // include all non-aggregated columns
+    return qb.getRawMany();
   }
 
   /* get transactions by a date range */
@@ -126,7 +143,6 @@ export class AnalyticsRepository {
     );
 
     qb.orderBy('t.date', 'DESC');
-    qb.take(10);
 
     return qb.getMany();
   }

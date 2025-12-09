@@ -11,6 +11,7 @@ import {
   PeriodAnalyticsDto,
   QueryDto,
   TrendPointDto,
+  walletsOverviewDto,
   WalletSummaryDto,
 } from './dto/analytics.dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
@@ -27,7 +28,7 @@ export class AnalyticsService {
 
   /*Helper methods */
 
- // Custom range analytics
+  // Custom range analytics
   async customRangeAnalytics(
     userId: number,
     start?: Date,
@@ -59,7 +60,7 @@ export class AnalyticsService {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId);
     const initial_balance =
-      await this.analyticsRepository.totalInitialBalance(userId);
+      await this.analyticsRepository.getTotalInitialBalanceForUser(userId);
     return {
       totalIncome: income,
       totalExpense: expense,
@@ -68,7 +69,7 @@ export class AnalyticsService {
     };
   }
 
-// wallet summary
+  // wallet summary
   async walletSummary(
     userId: number,
     walletId: number,
@@ -94,6 +95,12 @@ export class AnalyticsService {
     );
   }
 
+  // wallets overview
+  async walletOverview(userId: number): Promise<walletsOverviewDto[]> {
+    const walletsSummary =
+      await this.analyticsRepository.sumIncomeExpenseByAllWallets(userId);
+    return walletsSummary.map((w) => AnalyticsMapper.toWalletsOverview(w));
+  }
 
   /*Period analytics */
 
@@ -136,7 +143,7 @@ export class AnalyticsService {
     return rawData.map((r) => AnalyticsMapper.toTrendData(r));
   }
 
-//weekly trend
+  //weekly trend
   async weeklyTrendAnalytics(
     userId: number,
     weeks: number,
@@ -162,7 +169,6 @@ export class AnalyticsService {
     return rawData.map((r) => AnalyticsMapper.toTrendData(r));
   }
 
-
   /* category analytics */
 
   //category breakdown
@@ -179,8 +185,6 @@ export class AnalyticsService {
     });
     return raw.map((r) => AnalyticsMapper.toCategoryBreakdown(r));
   }
-
-
 }
 
 /* */

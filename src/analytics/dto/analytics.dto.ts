@@ -20,6 +20,15 @@ export class WalletSummaryDto {
   transactions: TransactionSummaryDto[];
 }
 
+export class walletsOverviewDto {
+  walletId: number;
+  walletName: string
+  initialBalance: number;
+  currentBalance: number;
+  totalIncome: number;
+  totalExpense: number;
+}
+
 //output dto for period analytics responses(daily, weekly, monthly, custom)
 export class PeriodAnalyticsDto {
   periodStart?: Date;
