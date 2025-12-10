@@ -1,7 +1,6 @@
 import { QueryDto } from 'src/analytics/dto';
 
 export class DateRange {
-  static normalizeDate: any;
   //get today's date range
   static today() {
     const now = new Date();

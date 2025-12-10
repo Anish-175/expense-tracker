@@ -1,6 +1,7 @@
 import { IsOptional, IsDateString } from 'class-validator';
 import { CategoryType } from 'src/category/entities/category.entity';
 import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.dto';
+import { TransactionType } from 'src/transaction/entities/transaction.entity';
 
 // overall summary dto
 export class OverallSummaryDto {
@@ -23,7 +24,7 @@ export class WalletSummaryDto {
 //wallets overview dto
 export class walletsOverviewDto {
   walletId: number;
-  walletName: string
+  walletName: string;
   initialBalance: number;
   currentBalance: number;
   totalIncome: number;
@@ -45,7 +46,8 @@ export class PeriodAnalyticsDto {
 export class CategoryBreakdownDto {
   categoryId: number;
   categoryName: string;
-  type: CategoryType;
+  categoryType: CategoryType;
+  transactionType: TransactionType;
   total: number;
   count: number;
 }
@@ -69,7 +71,3 @@ export class ComparePeriodDto {
   expenseChange: number;
   expenseChangePercent: number;
 }
-
-
-
-
