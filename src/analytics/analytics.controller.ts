@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -20,6 +21,9 @@ import {
   walletsOverviewDto,
   WalletSummaryDto,
 } from 'src/analytics/dto';
+import { userInfo } from 'os';
+import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.dto';
+import { Transaction, TransactionType } from 'src/transaction/entities/transaction.entity';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
@@ -146,5 +150,14 @@ export class AnalyticsController {
       user.userId,
       dto,
     );
+  }
+
+  //largest Transaction
+  @Get('largest-single-transaction')
+  async largestTransaction(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() dto: QueryDto,
+  ): Promise<TransactionSummaryDto> {
+    return await this.analyticsService.largestTransaction(user.userId, dto );
   }
 }

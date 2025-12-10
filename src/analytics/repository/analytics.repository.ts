@@ -228,4 +228,29 @@ export class AnalyticsRepository {
 
     return qb.getRawMany();
   }
+
+  //single highest transaction
+  async getLargestTransaction(
+    userId: number,
+    type?: TransactionType,
+    filters: AnalyticsFilters = {},
+  ): Promise<any> {
+    const qb = this.transactionRepository
+      .createQueryBuilder('t')
+      .where('t.userId = :userId', { userId });
+
+    if (type) {
+      qb.andWhere('t.type =:type', { type });
+    }
+    this.applyWalletAndDateFilters(
+      qb,
+      filters.walletId,
+      filters.startDate,
+      filters.endDate,
+    );
+    qb.orderBy('t.amount', 'DESC');
+    qb.limit(1);
+
+    return qb.getOne();
+  }
 }

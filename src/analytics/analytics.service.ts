@@ -20,6 +20,8 @@ import {
   WalletSummaryDto,
 } from 'src/analytics/dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
+import { TransactionMapper } from 'src/transaction/mappers/transaction.mapper';
+import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.dto';
 
 @Injectable()
 export class AnalyticsService {
@@ -218,6 +220,7 @@ export class AnalyticsService {
     return AnalyticsMapper.toComparePeriods(currentData, previousData);
   }
 
+  //highest spending category
   async highestSpendingCategory(
     userId: number,
     dto: QueryDto,
@@ -235,5 +238,22 @@ export class AnalyticsService {
     if (!highestExpense) throw new NotFoundException(`no expenses created`);
 
     return AnalyticsMapper.toCategoryBreakdown(highestExpense);
+  }
+
+  //largest transaction
+  async largestTransaction(
+    userId: number,
+    dto: QueryDto,
+    type?: TransactionType,
+  ): Promise<TransactionSummaryDto> {
+    const { start, end } = DateRange.normalizeDates(dto);
+;
+    const largestTransaction =
+      await this.analyticsRepository.getLargestTransaction(userId, type, {
+        walletId:dto.walletId,
+        startDate: start,
+        endDate: end,
+      });
+    return TransactionMapper.toDto(largestTransaction);
   }
 }
