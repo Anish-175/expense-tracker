@@ -2,10 +2,12 @@ import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { TransactionMapper } from 'src/transaction/mappers/transaction.mapper';
 import {
   CategoryBreakdownDto,
+  ComparePeriodDto,
   PeriodAnalyticsDto,
   TrendPointDto,
+  walletsOverviewDto,
   WalletSummaryDto,
-} from '../dto/analytics.dto';
+} from '../dto/analytics.output.dto';
 export class AnalyticsMapper {
   static toPeriodAnalytics(
     income: number,
@@ -42,6 +44,18 @@ export class AnalyticsMapper {
     };
   }
 
+  static toWalletsOverview(raw: any): walletsOverviewDto {
+    return {
+      walletId: Number(raw.walletId),
+      walletName: raw.walletName,
+      initialBalance: Number(raw.initialBalance),
+      totalIncome: Number(raw.income),
+      totalExpense: Number(raw.expense),
+      currentBalance:
+        Number(raw.initialBalance) + Number(raw.income) - Number(raw.expense),
+    };
+  }
+
   static toCategoryBreakdown(raw: any): CategoryBreakdownDto {
     return {
       categoryId: Number(raw.categoryId),
@@ -59,5 +73,41 @@ export class AnalyticsMapper {
       expense: Number(raw.expense),
       netProfit: Number(raw.income) - Number(raw.expense),
     };
+  }
+
+  static toComparePeriods(
+    currentData: PeriodAnalyticsDto,
+    previousData: PeriodAnalyticsDto,
+  ): ComparePeriodDto {
+    return {
+      currentIncome: currentData.income,
+      previousIncome: previousData.income,
+      incomeChange: currentData.income - previousData.income,
+      incomeChangePercent: this.percentChange(
+        previousData.income,
+        currentData.income,
+      ),
+
+      currentExpense: currentData.expense,
+      previousExpense: previousData.expense,
+      expenseChange: currentData.expense - previousData.expense,
+      expenseChangePercent: this.percentChange(
+        previousData.expense,
+        currentData.expense,
+      ),
+    };
+  }
+
+  /*Helpers */
+
+  //percent change helper
+  private static percentChange(
+    previousValue: number,
+    currentValue: number,
+  ): number {
+    if (previousValue === 0) {
+      return currentValue === 0 ? 0 : 100;
+    }
+    return Math.round(((currentValue - previousValue) / Math.abs(previousValue)) * 10000)/100;
   }
 }

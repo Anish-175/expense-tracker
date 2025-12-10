@@ -14,15 +14,19 @@ import { AnalyticsService } from 'src/analytics/analytics.service';
 import {
   CategoryBreakdownDto,
   OverallSummaryDto,
+  PeriodRangeDto,
   QueryDto,
   TrendPointDto,
+  walletsOverviewDto,
   WalletSummaryDto,
-} from './dto/analytics.dto';
+} from 'src/analytics/dto';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
+
+  /*API for Overall analytics */
 
   // API to get overall summary(income, expense, balance)
   @Get('overall/summary')
@@ -39,6 +43,31 @@ export class AnalyticsController {
     @Param('id', new ParseIntPipe()) walletId: number,
   ): Promise<WalletSummaryDto> {
     return await this.analyticsService.walletSummary(user.userId, walletId);
+  }
+
+  //API to get wallet overview
+  @Get('wallets/overview')
+  async walletsOverview(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<walletsOverviewDto[]> {
+    return await this.analyticsService.walletOverview(user.userId);
+  }
+
+  //API to get period comparision
+  @Post('compare-periods')
+  comparePeriods(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body()
+    dto: {
+      current: PeriodRangeDto;
+      previous: PeriodRangeDto;
+    },
+  ) {
+    return this.analyticsService.comparePeriods(
+      user.userId,
+      dto.current,
+      dto.previous,
+    );
   }
 
   /*  API to get period analytics - daily, weekly, monthly, custom range */
@@ -70,7 +99,6 @@ export class AnalyticsController {
     );
   }
 
-
   /*API to get Trend analytics */
   @Get('trend/daily/:days')
   async dailyTrendAnalytics(
@@ -93,9 +121,11 @@ export class AnalyticsController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('months', new ParseIntPipe()) months: number,
   ): Promise<TrendPointDto[]> {
-    return await this.analyticsService.monthlyTrendAnalytics(user.userId, months);
+    return await this.analyticsService.monthlyTrendAnalytics(
+      user.userId,
+      months,
+    );
   }
-
 
   /* API to get category analytics */
   @Post('category-breakdown')
@@ -105,6 +135,4 @@ export class AnalyticsController {
   ): Promise<CategoryBreakdownDto[]> {
     return await this.analyticsService.categoryBreakdown(user.userId, dto);
   }
-
-  
 }

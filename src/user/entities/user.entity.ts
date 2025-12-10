@@ -1,4 +1,5 @@
 
+import { Exclude } from 'class-transformer';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -18,7 +19,8 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, unique: true }) //email
   email: string;
-
+  
+  @Exclude()
   @Column({ type: 'varchar', length: 255 }) //password hashed
   password: string;
 

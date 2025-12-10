@@ -7,12 +7,15 @@ import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
 import {
   CategoryBreakdownDto,
+  ComparePeriodDto,
   OverallSummaryDto,
   PeriodAnalyticsDto,
+  PeriodRangeDto,
   QueryDto,
   TrendPointDto,
+  walletsOverviewDto,
   WalletSummaryDto,
-} from './dto/analytics.dto';
+} from 'src/analytics/dto';
 import { AnalyticsMapper } from './mapper/analytics.mapper';
 
 @Injectable()
@@ -27,7 +30,7 @@ export class AnalyticsService {
 
   /*Helper methods */
 
- // Custom range analytics
+  // Custom range analytics
   async customRangeAnalytics(
     userId: number,
     start?: Date,
@@ -58,16 +61,18 @@ export class AnalyticsService {
   async overallSummary(userId: number): Promise<OverallSummaryDto> {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId);
-    const currentBalance =
-      await this.analyticsRepository.currentNetBalance(userId);
+    const initial_balance =
+      await this.analyticsRepository.getTotalInitialBalanceForUser(userId);
     return {
       totalIncome: income,
       totalExpense: expense,
-      currentBalance: currentBalance,
+      initialBalance: initial_balance,
+      currentNetBalance: initial_balance + income - expense,
     };
   }
 
-// wallet summary
+  /*wallet analytics */
+  // individual wallet summary
   async walletSummary(
     userId: number,
     walletId: number,
@@ -93,9 +98,14 @@ export class AnalyticsService {
     );
   }
 
+  // all wallets overview
+  async walletOverview(userId: number): Promise<walletsOverviewDto[]> {
+    const walletsSummary =
+      await this.analyticsRepository.sumIncomeExpenseByAllWallets(userId);
+    return walletsSummary.map((w) => AnalyticsMapper.toWalletsOverview(w));
+  }
 
   /*Period analytics */
-
   //daily analytics
   async dailyAnalytics(userId: number): Promise<any> {
     const { start, end } = DateRange.fromPreset('today');
@@ -121,7 +131,6 @@ export class AnalyticsService {
   }
 
   /* Trend analytics */
-
   //daily trend
   async dailyTrendAnalytics(
     userId: number,
@@ -135,7 +144,7 @@ export class AnalyticsService {
     return rawData.map((r) => AnalyticsMapper.toTrendData(r));
   }
 
-//weekly trend
+  //weekly trend
   async weeklyTrendAnalytics(
     userId: number,
     weeks: number,
@@ -161,7 +170,6 @@ export class AnalyticsService {
     return rawData.map((r) => AnalyticsMapper.toTrendData(r));
   }
 
-
   /* category analytics */
 
   //category breakdown
@@ -179,7 +187,33 @@ export class AnalyticsService {
     return raw.map((r) => AnalyticsMapper.toCategoryBreakdown(r));
   }
 
+  //period comparison analytics
+async comparePeriods(
+  userId: number,
+  current: PeriodRangeDto,
+  previous: PeriodRangeDto,
+): Promise<ComparePeriodDto> {
 
+  const currentRange = DateRange.normalizeDates({
+    startDate: current.start,
+    endDate: current.end,
+  });
+  const previousRange = DateRange.normalizeDates({
+    startDate: previous.start,
+    endDate: previous.end,
+  });
+
+  const currentData = await this.customRangeAnalytics(
+    userId,
+    currentRange.start,
+    currentRange.end,
+  );
+  const previousData = await this.customRangeAnalytics(
+    userId,
+    previousRange.start,
+    previousRange.end,
+  );
+  return AnalyticsMapper.toComparePeriods(currentData, previousData);
 }
 
-/* */
+}
