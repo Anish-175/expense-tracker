@@ -135,4 +135,16 @@ export class AnalyticsController {
   ): Promise<CategoryBreakdownDto[]> {
     return await this.analyticsService.categoryBreakdown(user.userId, dto);
   }
+
+  //highest spending Category
+  @Post('highest-expense-category')
+  async highestExpenseCategory(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: QueryDto,
+  ): Promise<CategoryBreakdownDto> {
+    return await this.analyticsService.highestSpendingCategory(
+      user.userId,
+      dto,
+    );
+  }
 }

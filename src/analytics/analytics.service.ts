@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Transaction } from '../transaction/entities/transaction.entity';
+import {
+  Transaction,
+  TransactionType,
+} from '../transaction/entities/transaction.entity';
 import { Wallet } from '../wallet/entities/wallet.entity';
 import { DateRange } from './utils/date-helpers';
 import { AnalyticsRepository } from './repository/analytics.repository';
@@ -188,32 +191,49 @@ export class AnalyticsService {
   }
 
   //period comparison analytics
-async comparePeriods(
-  userId: number,
-  current: PeriodRangeDto,
-  previous: PeriodRangeDto,
-): Promise<ComparePeriodDto> {
+  async comparePeriods(
+    userId: number,
+    current: PeriodRangeDto,
+    previous: PeriodRangeDto,
+  ): Promise<ComparePeriodDto> {
+    const currentRange = DateRange.normalizeDates({
+      startDate: current.start,
+      endDate: current.end,
+    });
+    const previousRange = DateRange.normalizeDates({
+      startDate: previous.start,
+      endDate: previous.end,
+    });
 
-  const currentRange = DateRange.normalizeDates({
-    startDate: current.start,
-    endDate: current.end,
-  });
-  const previousRange = DateRange.normalizeDates({
-    startDate: previous.start,
-    endDate: previous.end,
-  });
+    const currentData = await this.customRangeAnalytics(
+      userId,
+      currentRange.start,
+      currentRange.end,
+    );
+    const previousData = await this.customRangeAnalytics(
+      userId,
+      previousRange.start,
+      previousRange.end,
+    );
+    return AnalyticsMapper.toComparePeriods(currentData, previousData);
+  }
 
-  const currentData = await this.customRangeAnalytics(
-    userId,
-    currentRange.start,
-    currentRange.end,
-  );
-  const previousData = await this.customRangeAnalytics(
-    userId,
-    previousRange.start,
-    previousRange.end,
-  );
-  return AnalyticsMapper.toComparePeriods(currentData, previousData);
-}
+  async highestSpendingCategory(
+    userId: number,
+    dto: QueryDto,
+  ): Promise<CategoryBreakdownDto> {
+    const { start, end } = DateRange.normalizeDates(dto);
+    const walletId = dto.walletId;
+    const categoryBreakdown = await this.analyticsRepository.sumByCategory(
+      userId,
+      { walletId, startDate: start, endDate: end },
+    );
+    const highestExpense = categoryBreakdown
+      .filter((c) => c.transactionType === TransactionType.EXPENSE)
+      .at(0);
 
+    if (!highestExpense) throw new NotFoundException(`no expenses created`);
+
+    return AnalyticsMapper.toCategoryBreakdown(highestExpense);
+  }
 }

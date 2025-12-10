@@ -56,11 +56,12 @@ export class AnalyticsMapper {
     };
   }
 
-  static toCategoryBreakdown(raw: any): CategoryBreakdownDto {
+  static toCategoryBreakdown(raw: CategoryBreakdownDto): CategoryBreakdownDto {
     return {
       categoryId: Number(raw.categoryId),
       categoryName: raw.categoryName,
-      type: raw.categoryType,
+      categoryType: raw.categoryType,
+      transactionType: raw.transactionType,
       total: Number(raw.total),
       count: Number(raw.count),
     };
