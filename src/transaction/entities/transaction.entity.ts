@@ -11,7 +11,6 @@ import {
 import { User } from 'src/user/entities/user.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Category } from 'src/category/entities/category.entity';
-import { Exclude, Expose } from 'class-transformer';
 
 export enum TransactionType {
   EXPENSE = 'expense',
@@ -60,6 +59,9 @@ export class Transaction {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   description?: string;
+
+  @Column({ nullable: true })
+  receiptUrl?: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;

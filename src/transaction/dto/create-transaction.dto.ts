@@ -29,4 +29,8 @@ export class CreateTransactionDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  receiptUrl?: string;
 }
