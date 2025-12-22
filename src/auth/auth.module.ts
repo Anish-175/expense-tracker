@@ -14,15 +14,18 @@ import { User } from 'src/user/entities/user.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    ConfigModule,
     PassportModule,
     UserModule,
+    AuthModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
+        global: true,
+        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
         signOptions: {
-          expiresIn: configService.get('JWT_EXPIRES_IN', '1h'),
+          expiresIn: configService.get<string>(
+            'JWT_ACCESS_TOKEN_EXPIRATION_MS',
+          ),
         },
       }),
       inject: [ConfigService],
@@ -30,5 +33,6 @@ import { User } from 'src/user/entities/user.entity';
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

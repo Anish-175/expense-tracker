@@ -1,4 +1,3 @@
-
 import { Exclude } from 'class-transformer';
 import {
   Entity,
@@ -19,7 +18,7 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, unique: true }) //email
   email: string;
-  
+
   @Exclude()
   @Column({ type: 'varchar', length: 255 }) //password hashed
   password: string;
@@ -32,7 +31,6 @@ export class User {
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true }) //for soft deletes
   deleted_at?: Date;
-
 }
 
 // user.entity.ts
