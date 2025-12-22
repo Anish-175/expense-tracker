@@ -10,12 +10,6 @@ WORKDIR /usr/src/app
 # Copy package.json
 COPY package*.json ./
 
-# Fix permissions
-RUN chown -R node:node /usr/src/app
-
-# Run the application as a non-root user.
-USER node
-
 
 # install dependencies.
 RUN npm install
