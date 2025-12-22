@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
@@ -10,18 +10,20 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
+  
+
+
+  
 
   //validate the user
-  async validateUser(email: string, password: string): Promise<User> {
+  async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.findUserByEmail(email);
 
-    if (!user || user.deleted_at)
-      throw new BadRequestException('Email or password wrong');
+    if (!user || user.deleted_at) return null; // 🛡️ Check for missing user first
 
     const isMatch = await compare(password, user.password);
-    if (!isMatch)
-       throw new BadRequestException('Email or password wrong');
+    if (!isMatch) return null;
 
     return user;
   }
@@ -37,7 +39,7 @@ export class AuthService {
 
   //handles login and token generation
   async login(user: User): Promise<{ access_token: string }> {
-    const payload =  {
+    const payload = {
       sub: user.id,
       name: user.name,
       email: user.email,
