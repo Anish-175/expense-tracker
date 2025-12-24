@@ -23,6 +23,10 @@ export class User {
   @Column({ type: 'varchar', length: 255 }) //password hashed
   password: string;
 
+  @Exclude()
+  @Column({ type: 'text', nullable: true }) //refresh token
+  refresh_token?: string;
+
   @CreateDateColumn({ type: 'timestamptz' }) //timestamp with timezones auto
   created_at: Date;
 

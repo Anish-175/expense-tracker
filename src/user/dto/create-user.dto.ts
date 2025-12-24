@@ -12,4 +12,7 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  refresh_token?: string;
 }
