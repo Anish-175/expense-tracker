@@ -16,8 +16,6 @@ services:
           target: /usr/src/app
           ignore:
             - node_modules/
-            - dist/
-            - .git/
         - action: rebuild
           path: package.json
     depends_on:
