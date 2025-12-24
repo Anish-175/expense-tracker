@@ -10,10 +10,13 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { AppDataSource } from './database/data-source';
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), //Loads environment variables from the .env file.
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }), //Loads environment variables from the .env file.
     //Configures TypeORM asynchronously, pulling database settings from environment variables.
     TypeOrmModule.forRootAsync({
-      useFactory:()=>AppDataSource.options,
+      useFactory: () => AppDataSource.options,
     }),
     UserModule,
     AuthModule,

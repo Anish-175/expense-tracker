@@ -116,6 +116,11 @@ export class UserService {
       const hashedPassword = await this.hashPassword(updateUserDto.password);
       user.password = hashedPassword;
     }
+
+    if (updateUserDto.refresh_token) {
+      user.refresh_token = updateUserDto.refresh_token;
+    }
+
     await this.userRepository.update(id, user);
     return this.findById(id);
   }
@@ -131,4 +136,16 @@ export class UserService {
     await this.categoryRepository.softDelete({ userId });
     await this.userRepository.softDelete(userId);
   }
+
+  //refresh query
+  async findByIdWithRefreshToken(id: number): Promise<User | null> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.refresh_token')
+      .where('user.id = :id', { id })
+      .getOne();
+  }
 }
+
+
+
