@@ -7,8 +7,6 @@ import { CategoryModule } from './category/category.module';
 import { WalletModule } from './wallet/wallet.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { AnalyticsModule } from './analytics/analytics.module';
-import jwtConfig from './auth/config/jwt.config';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), //Loads environment variables from the .env file.
