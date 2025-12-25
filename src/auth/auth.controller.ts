@@ -1,16 +1,15 @@
 import {
+  Body,
   Controller,
   Post,
-  UseGuards,
-  Request,
-  Body,
   Req,
-  UnauthorizedException,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 
 import { AuthGuard } from '@nestjs/passport';
-import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/user/dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -33,23 +32,13 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req) {
-    console.log(req.user);
-    return this.authService.login(req.user); // req.user is injected by LocalStrategy
+    return this.authService.login(req.user.userId); // req.user is injected by LocalStrategy
   }
-  @Post('refresh')
+
+  //refresh route
   @UseGuards(AuthGuard('jwt-refresh'))
+  @Post('refresh')
   async refresh(@Req() req: any) {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Refresh token missing');
-    }
-
-    const refreshToken = authHeader.replace('Bearer ', '').trim();
-
-    // req.user is now guaranteed to be a valid user
-    await this.authService.validateRefreshToken(refreshToken, req.user);
-
-    return this.authService.login(req.user);
+    return this.authService.login(req.user.userId);
   }
 }

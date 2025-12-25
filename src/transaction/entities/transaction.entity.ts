@@ -1,16 +1,16 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  Index,
-  DeleteDateColumn,
-} from 'typeorm';
+import { Category } from 'src/category/entities/category.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
-import { Category } from 'src/category/entities/category.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum TransactionType {
   EXPENSE = 'expense',

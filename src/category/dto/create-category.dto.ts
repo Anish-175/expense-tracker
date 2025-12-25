@@ -1,12 +1,12 @@
 import {
-  IsString,
+  IsBoolean,
   IsEnum,
   IsOptional,
-  IsBoolean,
+  IsString,
   Length,
   Matches,
 } from 'class-validator';
-import { CategoryType} from '../entities/category.entity';
+import { CategoryType } from '../entities/category.entity';
 
 export class CreateCategoryDto {
   @IsString()

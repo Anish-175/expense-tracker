@@ -1,17 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UnauthorizedException } from '@nestjs/common';
-import { IsNull, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly usersService: UserService,
     configService: ConfigService,
   ) {
     const jwtSecret = configService.get<string>('JWT_ACCESS_TOKEN_SECRET');
@@ -27,12 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const user = await this.userRepository.findOne({
-      where: {
-        id: payload.sub,
-        deleted_at: IsNull(),
-      },
-    });
+    const user = await this.usersService.findById(payload.sub);
 
     if (!user) {
       throw new UnauthorizedException('User not found or deleted');

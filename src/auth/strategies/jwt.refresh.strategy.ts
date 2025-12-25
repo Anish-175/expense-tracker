@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserService } from 'src/user/user.service';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -12,7 +11,6 @@ export class JwtRefreshStrategy extends PassportStrategy(
 ) {
   constructor(
     configService: ConfigService,
-    private readonly userService: UserService,
     private readonly authService: AuthService,
   ) {
     const jwtRefreshSecret = configService.get<string>(
@@ -25,16 +23,20 @@ export class JwtRefreshStrategy extends PassportStrategy(
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: jwtRefreshSecret,
+      passReqToCallback: true,
     });
   }
-  async validate(payload: any) {
-    const user = await this.userService.findById(payload.sub);
-
-    if (!user) {
+  async validate(request: Request, payload: any): Promise<{ userId: number }> {
+    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+    if (!token) {
       throw new UnauthorizedException();
     }
 
-    // IMPORTANT: only return user
-    return user;
+    const userId = await this.authService.validateRefreshToken(
+      token,
+      payload.sub,
+    );
+
+    return { userId };
   }
 }

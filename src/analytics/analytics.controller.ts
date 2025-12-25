@@ -9,8 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import {
   CategoryBreakdownDto,
@@ -21,9 +19,9 @@ import {
   walletsOverviewDto,
   WalletSummaryDto,
 } from 'src/analytics/dto';
-import { userInfo } from 'os';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.dto';
-import { Transaction, TransactionType } from 'src/transaction/entities/transaction.entity';
 
 @Controller('analytics')
 @UseGuards(AuthGuard('jwt'))
@@ -158,6 +156,6 @@ export class AnalyticsController {
     @CurrentUser() user: CurrentUserPayload,
     @Query() dto: QueryDto,
   ): Promise<TransactionSummaryDto> {
-    return await this.analyticsService.largestTransaction(user.userId, dto );
+    return await this.analyticsService.largestTransaction(user.userId, dto);
   }
 }

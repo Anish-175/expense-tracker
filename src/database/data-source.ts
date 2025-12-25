@@ -1,5 +1,5 @@
-import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import { DataSource } from 'typeorm';
 
 const config = new ConfigService();
 

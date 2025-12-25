@@ -1,10 +1,10 @@
 import {
-  IsInt,
   IsEnum,
+  IsInt,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsNotEmpty,
 } from 'class-validator';
 import { TransactionType } from '../entities/transaction.entity';
 

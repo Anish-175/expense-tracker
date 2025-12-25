@@ -1,4 +1,3 @@
-import { TransactionResponseDto } from '../dto/transaction-response.dto';
 import { TransactionSummaryDto } from '../dto/transaction-summary.dto';
 import { Transaction } from '../entities/transaction.entity';
 

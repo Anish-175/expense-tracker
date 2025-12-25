@@ -1,26 +1,24 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
+  Get,
+  Param,
   ParseIntPipe,
-
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { CategoryService } from './category.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { CategoryService } from './category.service';
 import { CategoryResponseDto } from './dto/category-response.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Controller('categories')
 @UseGuards(AuthGuard('jwt'))
-
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
@@ -33,7 +31,9 @@ export class CategoryController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: CurrentUserPayload): Promise<CategoryResponseDto[]> {
+  findAll(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<CategoryResponseDto[]> {
     return this.categoryService.findAll(user);
   }
 

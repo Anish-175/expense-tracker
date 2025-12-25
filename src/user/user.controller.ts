@@ -1,16 +1,16 @@
 import {
-  Controller,
-  Get,
   Body,
-  Patch,
+  Controller,
   Delete,
+  Get,
+  Patch,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UpdateUserDto } from './dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { UpdateUserDto } from './dto';
+import { UserService } from './user.service';
 
 @Controller('users')
 @UseGuards(AuthGuard('jwt'))

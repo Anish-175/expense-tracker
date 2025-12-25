@@ -1,16 +1,13 @@
 import {
   ConflictException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User } from 'src/user/entities/user.entity';
-import { UserService } from 'src/user/user.service';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { CreateUserDto } from 'src/user/dto';
-import { ConfigService } from '@nestjs/config';
-import { response } from 'express';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -21,15 +18,16 @@ export class AuthService {
   ) {}
 
   //validate the user
-  async validateUser(email: string, password: string): Promise<User | null> {
+  async validateUser(email: string, password: string): Promise<number> {
     const user = await this.userService.findUserByEmail(email);
 
-    if (!user || user.deleted_at) throw new UnauthorizedException("User not found"); // 🛡️ Check for missing user first
+    if (!user || user.deleted_at)
+      throw new UnauthorizedException('Invalid email or password'); // 🛡️ Check for missing user first
 
     const isMatch = await compare(password, user.password);
     if (!isMatch) throw new UnauthorizedException('Invalid email or password');
 
-    return user;
+    return user.id;
   }
 
   //register a user
@@ -44,11 +42,11 @@ export class AuthService {
   }
 
   async login(
-    user: User,
+    userId: number,
   ): Promise<{ access_token: string; refresh_token: string }> {
     try {
       const tokenPayload = {
-        sub: user.id,
+        sub: userId,
       };
 
       const accessToken = this.jwtService.sign(tokenPayload, {
@@ -63,7 +61,7 @@ export class AuthService {
         ),
       });
 
-      await this.userService.update(user.id, {
+      await this.userService.update(userId, {
         refresh_token: await hash(refreshToken, 10),
       });
 
@@ -73,20 +71,21 @@ export class AuthService {
     }
   }
 
-  async validateRefreshToken(refreshToken: string, user: User): Promise<User> {
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    const newUser = await this.userService.findByIdWithRefreshToken(user.id);
-    if (!newUser || !newUser.refresh_token) {
+  async validateRefreshToken(
+    refreshToken: string,
+    userId: number,
+  ): Promise<number> {
+    const user = await this.userService.findByIdWithRefreshToken(userId);
+
+    if (!user || !user.refresh_token) {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const isMatch = await compare(refreshToken, newUser.refresh_token);
+    const isMatch = await compare(refreshToken, user.refresh_token);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    return user;
+    return user.id;
   }
 }

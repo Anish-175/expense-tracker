@@ -1,2 +1,2 @@
-export* from './analytics.output.dto';
 export * from './analytics.input.dto';
+export * from './analytics.output.dto';

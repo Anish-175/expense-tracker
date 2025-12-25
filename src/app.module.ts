@@ -1,13 +1,13 @@
-import { Inject, Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
-import { WalletModule } from './wallet/wallet.module';
-import { TransactionModule } from './transaction/transaction.module';
-import { AnalyticsModule } from './analytics/analytics.module';
 import { AppDataSource } from './database/data-source';
+import { TransactionModule } from './transaction/transaction.module';
+import { UserModule } from './user/user.module';
+import { WalletModule } from './wallet/wallet.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
