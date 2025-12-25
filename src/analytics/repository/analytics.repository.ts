@@ -9,8 +9,9 @@ import { Repository } from 'typeorm';
 import {
   walletsOverviewDto,
   AnalyticsFilters,
+  PeriodRangeDto,
 } from 'src/analytics/dto';
-
+import { promises } from 'dns';
 
 @Injectable()
 export class AnalyticsRepository {
@@ -158,8 +159,10 @@ export class AnalyticsRepository {
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.category', 'c')
       .select('c.id', 'categoryId')
+      .addSelect('t.type', 'transactionType')
       .addSelect('c.name', 'categoryName')
       .addSelect('c.type', 'categoryType')
+
       .addSelect('SUM(t.amount)', 'total')
       .addSelect('COUNT(*)', 'count')
       .where('t.userId = :userId', { userId });
@@ -172,7 +175,8 @@ export class AnalyticsRepository {
       filters.endDate,
     );
 
-    qb.groupBy('c.id, c.type, c.name');
+    qb.groupBy('c.id, c.type, c.name,  t.type');
+    qb.orderBy('SUM(t.amount)', 'DESC');
 
     const result = await qb.getRawMany();
 
@@ -223,5 +227,30 @@ export class AnalyticsRepository {
       .orderBy('period', 'ASC');
 
     return qb.getRawMany();
+  }
+
+  //single highest transaction
+  async getLargestTransaction(
+    userId: number,
+    type?: TransactionType,
+    filters: AnalyticsFilters = {},
+  ): Promise<any> {
+    const qb = this.transactionRepository
+      .createQueryBuilder('t')
+      .where('t.userId = :userId', { userId });
+
+    if (type) {
+      qb.andWhere('t.type =:type', { type });
+    }
+    this.applyWalletAndDateFilters(
+      qb,
+      filters.walletId,
+      filters.startDate,
+      filters.endDate,
+    );
+    qb.orderBy('t.amount', 'DESC');
+    qb.limit(1);
+
+    return qb.getOne();
   }
 }
