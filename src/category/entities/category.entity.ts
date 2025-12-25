@@ -1,15 +1,15 @@
 import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
+  Entity,
   Index,
+  ManyToOne,
   OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 export enum CategoryType {

@@ -1,13 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {
-  Transaction,
-  TransactionType,
-} from '../transaction/entities/transaction.entity';
-import { Wallet } from '../wallet/entities/wallet.entity';
-import { DateRange } from './utils/date-helpers';
-import { AnalyticsRepository } from './repository/analytics.repository';
 import {
   CategoryBreakdownDto,
   ComparePeriodDto,
@@ -19,9 +11,17 @@ import {
   walletsOverviewDto,
   WalletSummaryDto,
 } from 'src/analytics/dto';
-import { AnalyticsMapper } from './mapper/analytics.mapper';
-import { TransactionMapper } from 'src/transaction/mappers/transaction.mapper';
 import { TransactionSummaryDto } from 'src/transaction/dto/transaction-summary.dto';
+import { TransactionMapper } from 'src/transaction/mappers/transaction.mapper';
+import { Repository } from 'typeorm';
+import {
+  Transaction,
+  TransactionType,
+} from '../transaction/entities/transaction.entity';
+import { Wallet } from '../wallet/entities/wallet.entity';
+import { AnalyticsMapper } from './mapper/analytics.mapper';
+import { AnalyticsRepository } from './repository/analytics.repository';
+import { DateRange } from './utils/date-helpers';
 
 @Injectable()
 export class AnalyticsService {
@@ -247,10 +247,9 @@ export class AnalyticsService {
     type?: TransactionType,
   ): Promise<TransactionSummaryDto> {
     const { start, end } = DateRange.normalizeDates(dto);
-;
     const largestTransaction =
       await this.analyticsRepository.getLargestTransaction(userId, type, {
-        walletId:dto.walletId,
+        walletId: dto.walletId,
         startDate: start,
         endDate: end,
       });

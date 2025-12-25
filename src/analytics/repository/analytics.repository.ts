@@ -1,17 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AnalyticsFilters, walletsOverviewDto } from 'src/analytics/dto';
 import {
   Transaction,
   TransactionType,
 } from 'src/transaction/entities/transaction.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Repository } from 'typeorm';
-import {
-  walletsOverviewDto,
-  AnalyticsFilters,
-  PeriodRangeDto,
-} from 'src/analytics/dto';
-import { promises } from 'dns';
 
 @Injectable()
 export class AnalyticsRepository {

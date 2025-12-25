@@ -5,15 +5,15 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateWalletDto } from './dto/create-wallet.dto';
-import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { Wallet, WalletType } from './entities/wallet.entity';
-import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { CreateWalletDto } from './dto/create-wallet.dto';
+import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { WalletResponseDto } from './dto/wallet-response.dto';
-import { plainToInstance } from 'class-transformer';
+import { Wallet, WalletType } from './entities/wallet.entity';
 
 @Injectable()
 export class WalletService {

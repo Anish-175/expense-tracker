@@ -109,6 +109,10 @@ export class AnalyticsMapper {
     if (previousValue === 0) {
       return currentValue === 0 ? 0 : 100;
     }
-    return Math.round(((currentValue - previousValue) / Math.abs(previousValue)) * 10000)/100;
+    return (
+      Math.round(
+        ((currentValue - previousValue) / Math.abs(previousValue)) * 10000,
+      ) / 100
+    );
   }
 }

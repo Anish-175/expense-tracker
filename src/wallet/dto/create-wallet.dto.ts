@@ -1,9 +1,9 @@
 import {
-  IsString,
-  IsNotEmpty,
   IsEnum,
-  IsOptional,
+  IsNotEmpty,
   IsNumber,
+  IsOptional,
+  IsString,
   Min,
 } from 'class-validator';
 import { WalletType } from '../entities/wallet.entity';

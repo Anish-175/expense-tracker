@@ -1,19 +1,19 @@
-import { Expose } from "class-transformer";
-import { CategoryType } from "../entities/category.entity";
+import { Expose } from 'class-transformer';
+import { CategoryType } from '../entities/category.entity';
 
 export class CategoryResponseDto {
-    @Expose()
-    id: number;
+  @Expose()
+  id: number;
 
-    @Expose()
-    name: string;
+  @Expose()
+  name: string;
 
-    @Expose()
-    type: CategoryType;
+  @Expose()
+  type: CategoryType;
 
-    @Expose()
-    color: string;
+  @Expose()
+  color: string;
 
-    @Expose()
-    created_at: Date;
+  @Expose()
+  created_at: Date;
 }

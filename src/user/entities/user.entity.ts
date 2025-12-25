@@ -1,12 +1,11 @@
-
 import { Exclude } from 'class-transformer';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('users')
@@ -19,10 +18,14 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, unique: true }) //email
   email: string;
-  
+
   @Exclude()
   @Column({ type: 'varchar', length: 255 }) //password hashed
   password: string;
+
+  @Exclude()
+  @Column({ type: 'text', nullable: true }) //refresh token
+  refresh_token?: string;
 
   @CreateDateColumn({ type: 'timestamptz' }) //timestamp with timezones auto
   created_at: Date;
@@ -32,7 +35,6 @@ export class User {
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true }) //for soft deletes
   deleted_at?: Date;
-
 }
 
 // user.entity.ts

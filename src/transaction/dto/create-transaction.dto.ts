@@ -1,10 +1,10 @@
 import {
-  IsInt,
   IsEnum,
+  IsInt,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsNotEmpty,
 } from 'class-validator';
 import { TransactionType } from '../entities/transaction.entity';
 
@@ -29,4 +29,8 @@ export class CreateTransactionDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  receiptUrl?: string;
 }

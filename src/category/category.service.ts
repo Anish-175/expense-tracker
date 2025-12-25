@@ -1,21 +1,19 @@
 import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
   ConflictException,
+  ForbiddenException,
+  Injectable,
   InternalServerErrorException,
-  BadRequestException,
-  OnModuleInit,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { Category, CategoryType } from './entities/category.entity';
+import { plainToInstance } from 'class-transformer';
+import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
+import { Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
+import { CategoryResponseDto } from './dto/category-response.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { User } from '../user/entities/user.entity';
-import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
-import { CategoryResponseDto } from './dto/category-response.dto';
-import { plainToInstance } from 'class-transformer';
+import { Category, CategoryType } from './entities/category.entity';
 
 @Injectable()
 export class CategoryService {
@@ -29,7 +27,7 @@ export class CategoryService {
   // create a new category
   async create(
     createCategoryDto: CreateCategoryDto,
-    user: CurrentUserPayload, //get user from payload
+    user: CurrentUserPayload, //get user info from payload
   ): Promise<CategoryResponseDto> {
     try {
       const { name } = createCategoryDto; //destructure category fields from the dto

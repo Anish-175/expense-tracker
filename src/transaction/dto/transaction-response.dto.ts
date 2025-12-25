@@ -19,6 +19,9 @@ export class TransactionResponseDto {
   createdAt: Date;
 
   @Exclude()
+  receiptUrl: string;
+
+  @Exclude()
   updated_at: Date;
 
   @Exclude()

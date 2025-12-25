@@ -1,22 +1,22 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
+  Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 
-import { CreateWalletDto } from './dto/create-wallet.dto';
-import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
-import { AuthGuard } from '@nestjs/passport';
-import { WalletService } from './wallet.service';
+import { CreateWalletDto } from './dto/create-wallet.dto';
+import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { WalletResponseDto } from './dto/wallet-response.dto';
+import { WalletService } from './wallet.service';
 
 @Controller('wallets')
 @UseGuards(AuthGuard('jwt'))
@@ -32,13 +32,15 @@ export class WalletController {
     return this.walletService.create(createWalletDto, user);
   }
 
-//get all wallets for a user
+  //get all wallets for a user
   @Get()
-  findAll(@CurrentUser() user: CurrentUserPayload): Promise<WalletResponseDto[]> {
+  findAll(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<WalletResponseDto[]> {
     return this.walletService.findAll(user);
   }
 
-//get a single wallet by id
+  //get a single wallet by id
   @Get(':id')
   findOne(
     @Param('id', new ParseIntPipe()) id: number,
@@ -47,7 +49,7 @@ export class WalletController {
     return this.walletService.findOne(id, user);
   }
 
-//update a wallet by id
+  //update a wallet by id
   @Patch(':id')
   update(
     @Param('id', new ParseIntPipe()) id: number,

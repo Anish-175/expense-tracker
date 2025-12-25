@@ -5,17 +5,16 @@ import {
 } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, QueryFailedError, Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { plainToInstance } from 'class-transformer';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto';
 import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
 import { CategoryService } from 'src/category/category.service';
 import { Category } from 'src/category/entities/category.entity';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { WalletService } from 'src/wallet/wallet.service';
-import { CurrentUserPayload } from 'src/common/interface/current-user.interface';
-import { Transaction } from 'src/transaction/entities/transaction.entity';
+import { IsNull, QueryFailedError, Repository } from 'typeorm';
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -116,6 +115,11 @@ export class UserService {
       const hashedPassword = await this.hashPassword(updateUserDto.password);
       user.password = hashedPassword;
     }
+
+    if (updateUserDto.refresh_token) {
+      user.refresh_token = updateUserDto.refresh_token;
+    }
+
     await this.userRepository.update(id, user);
     return this.findById(id);
   }
@@ -130,5 +134,14 @@ export class UserService {
     await this.walletRepository.softDelete({ userId });
     await this.categoryRepository.softDelete({ userId });
     await this.userRepository.softDelete(userId);
+  }
+
+  //refresh query
+  async findByIdWithRefreshToken(id: number): Promise<User | null> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.refresh_token')
+      .where('user.id = :id', { id })
+      .getOne();
   }
 }
