@@ -38,6 +38,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found or deleted');
     }
 
-    return { userId: payload.sub, name: payload.name, email: payload.email };
+    return { userId: payload.sub };
   }
 }

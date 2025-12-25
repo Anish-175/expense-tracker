@@ -24,10 +24,10 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.findUserByEmail(email);
 
-    if (!user || user.deleted_at) return null; // 🛡️ Check for missing user first
+    if (!user || user.deleted_at) throw new UnauthorizedException("User not found"); // 🛡️ Check for missing user first
 
     const isMatch = await compare(password, user.password);
-    if (!isMatch) return null;
+    if (!isMatch) throw new UnauthorizedException('Invalid email or password');
 
     return user;
   }
@@ -43,20 +43,9 @@ export class AuthService {
     return this.userService.createUser(createUserDto);
   }
 
-  //handles login and token generation
-  // async login(user: User): Promise<{ access_token: string }> {
-  //   const payload = {
-  //     sub: user.id,
-  //   };
-
-  //   return {
-  //     access_token: this.jwtService.sign(payload),
-  //   };
-  // }
-
   async login(
     user: User,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{ access_token: string; refresh_token: string }> {
     try {
       const tokenPayload = {
         sub: user.id,
@@ -78,7 +67,7 @@ export class AuthService {
         refresh_token: await hash(refreshToken, 10),
       });
 
-      return { accessToken: accessToken, refreshToken: refreshToken };
+      return { access_token: accessToken, refresh_token: refreshToken };
     } catch (error) {
       throw new UnauthorizedException('Login failed. Please try again.');
     }

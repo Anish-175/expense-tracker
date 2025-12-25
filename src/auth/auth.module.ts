@@ -10,8 +10,7 @@ import { UserModule } from 'src/user/user.module';
 import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
-import { ref } from 'process';
-import { JwtRefreshStrategy } from './strategies/jwt.refrsh.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt.refresh.strategy';
 
 @Module({
   imports: [
