@@ -17,7 +17,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  //validate the user
+  //validate user email and password
   async validateUser(email: string, password: string): Promise<number> {
     const user = await this.userService.findUserByEmail(email);
 
@@ -30,7 +30,7 @@ export class AuthService {
     return user.id;
   }
 
-  //register a user
+  //register a user with email and password
   async register(createUserDto: CreateUserDto) {
     const existingUser = await this.userService.findUserByEmail(
       createUserDto.email,
@@ -41,6 +41,7 @@ export class AuthService {
     return this.userService.createUser(createUserDto);
   }
 
+  //login user and generate access and refresh token
   async login(
     userId: number,
   ): Promise<{ access_token: string; refresh_token: string }> {
@@ -71,6 +72,7 @@ export class AuthService {
     }
   }
 
+  //compare refresh token with database
   async validateRefreshToken(
     refreshToken: string,
     userId: number,
