@@ -6,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -23,9 +24,10 @@ export class Category {
   id: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: number;
 
   @Column({ type: 'varchar', length: 255 })
@@ -37,17 +39,17 @@ export class Category {
   @Column({ type: 'varchar', length: 7 })
   color: string;
 
-  @Column({ type: 'boolean', default: false })
-  is_default: boolean;
+  @Column({name : 'is_default', type: 'boolean', default: false })
+  isDefault: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at: Date;
+  @CreateDateColumn({name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at: Date;
+  @UpdateDateColumn({name: 'updated_at', type: 'timestamptz' })
+  updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamptz' })
-  deleted_at?: Date;
+  @DeleteDateColumn({name: 'deleted_at', type: 'timestamptz' })
+  deletedAt?: Date;
 
   @OneToMany(() => Transaction, (t) => t.category)
   transactions: Transaction[];

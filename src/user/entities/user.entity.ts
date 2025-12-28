@@ -24,17 +24,17 @@ export class User {
   password: string;
 
   @Exclude()
-  @Column({ type: 'text', nullable: true }) //refresh token
-  refresh_token?: string;
+  @Column({ name: 'refresh_token', type: 'text', nullable: true }) //refresh token
+  refreshToken?: string;
 
-  @CreateDateColumn({ type: 'timestamptz' }) //timestamp with timezones auto
-  created_at: Date;
+  @CreateDateColumn({name: 'created_at', type: 'timestamptz' }) //timestamp with timezones auto
+  createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at: Date;
+  @UpdateDateColumn({name: 'updated_at', type: 'timestamptz' })
+  updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamptz', nullable: true }) //for soft deletes
-  deleted_at?: Date;
+  @DeleteDateColumn({name: 'deleted_at', type: 'timestamptz', nullable: true }) //for soft deletes
+  deletedAt?: Date;
 }
 
 // user.entity.ts

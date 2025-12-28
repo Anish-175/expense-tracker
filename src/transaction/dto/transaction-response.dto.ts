@@ -22,11 +22,11 @@ export class TransactionResponseDto {
   receiptUrl: string;
 
   @Exclude()
-  updated_at: Date;
+  updatedAt: Date;
 
   @Exclude()
   userId: number;
 
   @Exclude()
-  deleted_at?: Date;
+  deletedAt?: Date;
 }

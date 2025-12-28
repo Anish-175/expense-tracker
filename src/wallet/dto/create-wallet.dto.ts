@@ -20,5 +20,5 @@ export class CreateWalletDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @IsOptional()
-  initial_balance?: number = 0;
+  initialBalance?: number = 0;
 }

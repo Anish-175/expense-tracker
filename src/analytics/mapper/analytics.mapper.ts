@@ -31,15 +31,15 @@ export class AnalyticsMapper {
     walletId: number,
     income: number,
     expense: number,
-    initial_balance: number,
+    initialBalance: number,
     transactions: Transaction[],
   ): WalletSummaryDto {
     return {
       walletId: walletId,
       totalIncome: income,
       totalExpense: expense,
-      initial_balance: initial_balance,
-      currentBalance: initial_balance + income - expense,
+      initialBalance: initialBalance,
+      currentBalance: initialBalance + income - expense,
       transactions: transactions.map(TransactionMapper.toDto),
     };
   }

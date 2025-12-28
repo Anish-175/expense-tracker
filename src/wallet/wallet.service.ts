@@ -41,14 +41,14 @@ export class WalletService {
         relations: ['user'],
       });
       // Case 1: Already exists and is active
-      if (existingWallet && !existingWallet.deleted_at) {
+      if (existingWallet && !existingWallet.deletedAt) {
         throw new ConflictException(
           'Wallet name already exists for this scope',
         );
       }
 
       // Case 2: Soft-deleted — restore it
-      if (existingWallet && existingWallet.deleted_at) {
+      if (existingWallet && existingWallet.deletedAt) {
         await this.walletRepository.recover(existingWallet);
 
         // Optionally update other fields (like icon, type) if provided in DTO
@@ -170,7 +170,7 @@ export class WalletService {
         });
 
         if (existingWithDeleted) {
-          if (!existingWithDeleted.deleted_at) {
+          if (!existingWithDeleted.deletedAt) {
             // Active wallet with the same name already exists
             throw new ConflictException(
               'Wallet name already exists for this scope',
@@ -238,7 +238,7 @@ export class WalletService {
     const wallet = this.walletRepository.create({
       name: 'Default Wallet',
       type: WalletType.WALLET,
-      initial_balance: 0,
+      initialBalance: 0,
       is_default: true,
       user,
     });

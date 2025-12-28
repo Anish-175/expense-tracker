@@ -42,14 +42,14 @@ export class CategoryService {
         relations: ['user'],
       });
       // Case 1: Already exists and is active
-      if (existingCategory && !existingCategory.deleted_at) {
+      if (existingCategory && !existingCategory.deletedAt) {
         throw new ConflictException(
           'Category name already exists for this scope',
         );
       }
 
       // Case 2: Soft-deleted — restore it
-      if (existingCategory && existingCategory.deleted_at) {
+      if (existingCategory && existingCategory.deletedAt) {
         await this.categoryRepository.recover(existingCategory);
 
         // Optionally update other fields (like icon, type) if provided in DTO
@@ -176,7 +176,7 @@ export class CategoryService {
         });
 
         if (existingWithDeleted) {
-          if (!existingWithDeleted.deleted_at) {
+          if (!existingWithDeleted.deletedAt) {
             // Active category with the same name already exists
             throw new ConflictException(
               'Category name already exists for this scope',
@@ -275,7 +275,7 @@ export class CategoryService {
         });
 
         if (existing) {
-          if (existing.deleted_at) {
+          if (existing.deletedAt) {
             // recover soft-deleted
             await this.categoryRepository.recover(existing);
           }
@@ -284,7 +284,7 @@ export class CategoryService {
 
         const newCategory = this.categoryRepository.create({
           ...cat,
-          is_default: true,
+          isDefault: true,
           user,
         });
 

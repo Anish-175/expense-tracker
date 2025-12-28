@@ -15,7 +15,7 @@ export class WalletSummaryDto {
   walletId: number;
   totalExpense: number;
   totalIncome: number;
-  initial_balance: number;
+  initialBalance: number;
   currentBalance: number;
   transactions: TransactionSummaryDto[];
 }

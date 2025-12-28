@@ -12,8 +12,8 @@ export class WalletResponseDto {
   type: WalletType;
 
   @Expose()
-  initial_balance: number;
+  initialBalance: number;
 
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 }

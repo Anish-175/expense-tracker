@@ -7,6 +7,7 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -19,33 +20,34 @@ export enum TransactionType {
 }
 
 @Entity('transactions')
-@Index('idx_date', ['date'])
-@Index('idx_user_id', ['userId'])
-@Index('idx_wallet_id', ['walletId'])
-@Index('idx_category_id', ['categoryId'])
+@Index('idx_user_date', ['userId', 'date'])
+@Index('idx_wallet_date', ['walletId', 'date'])
 export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
 
   @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: number;
 
   @ManyToOne(() => Wallet, { nullable: false, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'wallet_id' })
   wallet: Wallet;
 
-  @Column()
+  @Column({ name: 'wallet_id' })
   walletId: number;
 
   @ManyToOne(() => Category, (category) => category.transactions, {
     nullable: true,
     onDelete: 'SET NULL',
   })
+  @JoinColumn({ name: 'category_id' })
   category?: Category;
 
-  @Column({ nullable: true })
+  @Column({ name: 'category_id', nullable: true })
   categoryId?: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
@@ -60,16 +62,16 @@ export class Transaction {
   @Column({ type: 'varchar', length: 255, nullable: true })
   description?: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'receipt_url', nullable: true })
   receiptUrl?: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamptz' })
-  deleted_at?: Date;
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz' })
+  deletedAt?: Date;
   // Add analytics fields (year, month, tags, etc.) here later as needed
 }

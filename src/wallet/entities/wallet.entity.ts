@@ -5,6 +5,7 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -24,9 +25,10 @@ export class Wallet {
   id: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: false })
+  @JoinColumn({ name: 'user_id' })
   user?: User;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: number;
 
   @Column({ type: 'varchar', length: 255 })
@@ -35,18 +37,24 @@ export class Wallet {
   @Column({ type: 'enum', enum: WalletType, default: WalletType.WALLET })
   type: WalletType;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  initial_balance: number;
+  @Column({
+    name: 'initial_balance',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
+  initialBalance: number;
 
   @Column({ type: 'boolean', default: false })
   is_default: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamptz', nullable: true })
-  deleted_at?: Date;
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz', nullable: true })
+  deletedAt?: Date;
 }

@@ -41,14 +41,14 @@ export class AnalyticsRepository {
       qb.andWhere('t.date <= :end', { end: endDate });
     }
     //exclude soft deleted
-    qb.andWhere('t.deleted_at IS NULL');
+    qb.andWhere('t.deletedAt IS NULL');
   }
 
   /*fetch a wallet */
   async fetchWalletById(walletId: number): Promise<Wallet> {
     const wallet = await this.walletRepository.findOne({
       where: { id: walletId },
-      select: ['id', 'initial_balance'],
+      select: ['id', 'initialBalance'],
     });
     if (!wallet) throw new NotFoundException(`Wallet ${walletId} not found`);
     return wallet;
@@ -90,11 +90,11 @@ export class AnalyticsRepository {
     };
   }
 
-  /* current Net balance(initial_balance + income - expense) for user */
+  /* current Net balance(initialBalance + income - expense) for user */
   async getTotalInitialBalanceForUser(userId: number): Promise<number> {
     const { totalInitialBalance } = await this.walletRepository
       .createQueryBuilder('w')
-      .select('COALESCE(SUM(w.initial_balance), 0)', 'totalInitialBalance')
+      .select('COALESCE(SUM(w.initialBalance), 0)', 'totalInitialBalance')
       .where('w.userId = :userId', { userId })
       .getRawOne();
     return Number(totalInitialBalance) || 0;
@@ -106,9 +106,9 @@ export class AnalyticsRepository {
   ): Promise<walletsOverviewDto[]> {
     const qb = this.walletRepository
       .createQueryBuilder('w')
-      .leftJoin(Transaction, 't', 't.walletId = w.id AND t.deleted_at IS NULL')
+      .leftJoin(Transaction, 't', 't.walletId = w.id AND t.deletedAt IS NULL')
       .select('w.id', 'walletId')
-      .addSelect('w.initial_balance', 'initialBalance')
+      .addSelect('w.initialBalance', 'initialBalance')
       .addSelect('w.name', 'walletName')
       .addSelect(
         `
@@ -117,12 +117,12 @@ export class AnalyticsRepository {
     `,
       )
       .where('w.userId = :userId', { userId })
-      .andWhere('w.deleted_at IS NULL')
+      .andWhere('w.deletedAt IS NULL')
       .setParameters({
         income: TransactionType.INCOME,
         expense: TransactionType.EXPENSE,
       })
-      .groupBy('w.id, w.initial_balance, w.name'); // include all non-aggregated columns
+      .groupBy('w.id, w.initialBalance, w.name'); // include all non-aggregated columns
     return qb.getRawMany();
   }
 
@@ -217,7 +217,7 @@ export class AnalyticsRepository {
       )
       .where('t.userId = :userId', { userId })
       .andWhere(`t.date >= NOW() - (${intervalExpr})`, { count })
-      .andWhere('t.deleted_at IS NULL')
+      .andWhere('t.deletedAt IS NULL')
       .groupBy('period')
       .orderBy('period', 'ASC');
 

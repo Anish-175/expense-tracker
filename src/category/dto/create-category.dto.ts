@@ -25,5 +25,5 @@ export class CreateCategoryDto {
 
   @IsBoolean()
   @IsOptional()
-  is_default?: boolean;
+  isDefault?: boolean;
 }

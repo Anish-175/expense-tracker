@@ -15,5 +15,5 @@ export class CategoryResponseDto {
   color: string;
 
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 }

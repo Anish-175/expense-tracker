@@ -66,13 +66,13 @@ export class AnalyticsService {
   async overallSummary(userId: number): Promise<OverallSummaryDto> {
     const { income, expense } =
       await this.analyticsRepository.sumIncomeAndExpense(userId);
-    const initial_balance =
+    const initialBalance =
       await this.analyticsRepository.getTotalInitialBalanceForUser(userId);
     return {
       totalIncome: income,
       totalExpense: expense,
-      initialBalance: initial_balance,
-      currentNetBalance: initial_balance + income - expense,
+      initialBalance: initialBalance,
+      currentNetBalance: initialBalance + income - expense,
     };
   }
 
@@ -87,7 +87,7 @@ export class AnalyticsService {
 
     const wallet = await this.analyticsRepository.fetchWalletById(walletId);
 
-    const initial_balance = Number(wallet.initial_balance);
+    const initialBalance = Number(wallet.initialBalance);
 
     const transactions =
       await this.analyticsRepository.getTransactionsByDateRange(userId, {
@@ -98,7 +98,7 @@ export class AnalyticsService {
       walletId,
       income,
       expense,
-      initial_balance,
+      initialBalance,
       transactions,
     );
   }

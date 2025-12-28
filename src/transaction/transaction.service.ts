@@ -24,7 +24,7 @@ export class TransactionService {
     private walletRepository: Repository<Wallet>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   /* Helper methods */
   private mapTransactionToCategory(type: TransactionType): CategoryType {
@@ -149,30 +149,18 @@ export class TransactionService {
     id: number,
     user: CurrentUserPayload,
   ): Promise<TransactionResponseDto> {
-    try {
-      const transaction = await this.transactionRepository.findOne({
-        where: { id },
-      });
-      if (!transaction) {
-        throw new NotFoundException(`Transaction with ID ${id} not found`);
-      }
-      if (transaction.userId !== user.userId) {
-        throw new ForbiddenException(
-          'You do not have permission to access this transaction',
-        );
-      }
-      return plainToInstance(TransactionResponseDto, transaction, {});
-    } catch (error) {
-      console.error('Error in TransactionService.findOne:', {
-        message: error.message,
-        stack: error.stack,
-        id,
-        user,
-      });
-      throw new InternalServerErrorException(
-        `Failed to fetch transaction: ${error.message}`,
+    const transaction = await this.transactionRepository.findOne({
+      where: { id },
+    });
+    if (!transaction) {
+      throw new NotFoundException(`Transaction with ID ${id} not found`);
+    }
+    if (transaction.userId !== user.userId) {
+      throw new ForbiddenException(
+        'You do not have permission to access this transaction',
       );
     }
+    return plainToInstance(TransactionResponseDto, transaction, {});
   }
 
   //update transaction
@@ -228,20 +216,9 @@ export class TransactionService {
     id: number,
     user: CurrentUserPayload,
   ): Promise<{ message: string }> {
-    try {
-      await this.findOne(id, user);
-      await this.transactionRepository.softDelete(id);
-      return { message: 'Transaction deleted successfully' };
-    } catch (error) {
-      console.error('Error in TransactionService.remove:', {
-        message: error.message,
-        stack: error.stack,
-        id,
-        user,
-      });
-      throw new InternalServerErrorException(
-        `Failed to delete transaction: ${error.message}`,
-      );
-    }
+    await this.findOne(id, user);
+    await this.transactionRepository.softDelete(id);
+    return { message: 'Transaction deleted successfully' };
+
   }
 }

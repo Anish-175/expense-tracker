@@ -21,5 +21,5 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  refresh_token?: string;
+  refreshToken?: string;
 }

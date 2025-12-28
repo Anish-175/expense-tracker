@@ -69,10 +69,10 @@ export class UserService {
     }
   }
 
-  //find user by id
+  //find user by id even soft deleted users to allow restoration
   async findById(userId: number): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({
-      where: { id: userId, deleted_at: IsNull() },
+      where: { id: userId, deletedAt: IsNull() },
     });
     if (!user) {
       throw new NotFoundException(`User with id ${userId} not found`);
@@ -116,8 +116,8 @@ export class UserService {
       user.password = hashedPassword;
     }
 
-    if (updateUserDto.refresh_token) {
-      user.refresh_token = updateUserDto.refresh_token;
+    if (updateUserDto.refreshToken) {
+      user.refreshToken = updateUserDto.refreshToken;
     }
 
     await this.userRepository.update(id, user);

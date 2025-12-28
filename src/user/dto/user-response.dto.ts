@@ -12,6 +12,6 @@ export class UserResponseDto {
   email: string;
 
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 
 }

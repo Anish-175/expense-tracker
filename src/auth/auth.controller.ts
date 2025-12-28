@@ -42,10 +42,10 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
   async refresh(@Req() req, @Res({ passthrough: true }) res) {
-    const { userId, oldRefreshToken } = req.user;
-    const { accessToken, refreshToken } =
-      await this.authService.rotateRefreshToken(userId, oldRefreshToken);
-    res.cookie('refreshToken', refreshToken, {
+    const { userId, refreshToken} = req.user;
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.authService.rotateRefreshToken(userId, refreshToken);
+    res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       sameSite: 'lax',
       secure: false, // true in production (HTTPS)
