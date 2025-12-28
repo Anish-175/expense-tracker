@@ -116,7 +116,7 @@ export class UserService {
       user.password = hashedPassword;
     }
 
-    if (updateUserDto.refreshToken) {
+    if (updateUserDto.refreshToken || updateUserDto.refreshToken === null) {
       user.refreshToken = updateUserDto.refreshToken;
     }
 

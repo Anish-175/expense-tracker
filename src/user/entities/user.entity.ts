@@ -25,15 +25,15 @@ export class User {
 
   @Exclude()
   @Column({ name: 'refresh_token', type: 'text', nullable: true }) //refresh token
-  refreshToken?: string;
+  refreshToken?: string | null;
 
-  @CreateDateColumn({name: 'created_at', type: 'timestamptz' }) //timestamp with timezones auto
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' }) //timestamp with timezones auto
   createdAt: Date;
 
-  @UpdateDateColumn({name: 'updated_at', type: 'timestamptz' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 
-  @DeleteDateColumn({name: 'deleted_at', type: 'timestamptz', nullable: true }) //for soft deletes
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz', nullable: true }) //for soft deletes
   deletedAt?: Date;
 }
 
