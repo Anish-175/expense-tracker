@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Req,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from 'src/user/dto';
@@ -31,14 +24,33 @@ export class AuthController {
   //login route
   @UseGuards(AuthGuard('local'))
   @Post('login')
-  async login(@Request() req) {
-    return this.authService.login(req.user.userId); // req.user is injected by LocalStrategy
+  async login(@Req() req, @Res({ passthrough: true }) res) {
+    const { accessToken, refreshToken } = await this.authService.login(
+      req.user.userId,
+    );
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // true in production (HTTPS)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    }); // req.user is injected by LocalStrategy
+    return { accessToken };
   }
 
   //refresh route
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
-  async refresh(@Req() req: any) {
-    return this.authService.login(req.user.userId);
+  async refresh(@Req() req, @Res({ passthrough: true }) res) {
+    const { userId, oldRefreshToken } = req.user;
+    const { accessToken, refreshToken } =
+      await this.authService.rotateRefreshToken(userId, oldRefreshToken);
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // true in production (HTTPS)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    return { accessToken };
   }
 }

@@ -21,7 +21,7 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<number> {
     const user = await this.userService.findUserByEmail(email);
 
-    if (!user || user.deleted_at)
+    if (!user || user.deletedAt)
       throw new UnauthorizedException('Invalid email or password'); // 🛡️ Check for missing user first
 
     const isMatch = await compare(password, user.password);
@@ -44,50 +44,67 @@ export class AuthService {
   //login user and generate access and refresh token
   async login(
     userId: number,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      const tokenPayload = {
-        sub: userId,
-      };
-
-      const accessToken = this.jwtService.sign(tokenPayload, {
-        secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
-        expiresIn: this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION'),
-      });
-
-      const refreshToken = this.jwtService.sign(tokenPayload, {
-        secret: this.configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
-        expiresIn: this.configService.getOrThrow(
-          'JWT_REFRESH_TOKEN_EXPIRATION',
-        ),
-      });
-
-      await this.userService.update(userId, {
-        refresh_token: await hash(refreshToken, 10),
-      });
-
-      return { access_token: accessToken, refresh_token: refreshToken };
+      return this.issueTokens(userId);
     } catch (error) {
       throw new UnauthorizedException('Login failed. Please try again.');
     }
   }
 
-  //compare refresh token with database
+  //when (auth/refresh) is called the refresh token is rotated
+  async rotateRefreshToken(userId: number, refreshToken: string) {
+    const validatedUserId = await this.validateRefreshToken(
+      refreshToken,
+      userId,
+    );
+    return this.issueTokens(validatedUserId);
+  }
+
+  //compare refresh token with database and return validated user id
   async validateRefreshToken(
     refreshToken: string,
     userId: number,
   ): Promise<number> {
     const user = await this.userService.findByIdWithRefreshToken(userId);
 
-    if (!user || !user.refresh_token) {
+    if (!user || !user.refreshToken) {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const isMatch = await compare(refreshToken, user.refresh_token);
+    const isMatch = await compare(refreshToken, user.refreshToken);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
     return user.id;
   }
+
+  //helper method to generate access and refresh token and save refresh token to database
+  async issueTokens(
+    userId: number,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const tokenPayload = {
+      sub: userId,
+    };
+    const accessToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
+      expiresIn: this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION'),
+    });
+
+    const refreshToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
+      expiresIn: this.configService.getOrThrow('JWT_REFRESH_TOKEN_EXPIRATION'),
+    });
+
+    await this.userService.update(userId, {
+      refreshToken: await hash(refreshToken, 10),
+    });
+
+    return { accessToken: accessToken, refreshToken: refreshToken };
+  }
+
+
+
+  
 }
