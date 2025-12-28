@@ -42,7 +42,7 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
   async refresh(@Req() req, @Res({ passthrough: true }) res) {
-    const { userId, refreshToken} = req.user;
+    const { userId, refreshToken } = req.user;
     const { accessToken, refreshToken: newRefreshToken } =
       await this.authService.rotateRefreshToken(userId, refreshToken);
     res.cookie('refreshToken', newRefreshToken, {
@@ -52,5 +52,24 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return { accessToken };
+  }
+
+  @UseGuards(AuthGuard('jwt')) // Protect logout
+  @Post('logout')
+  async logout(@Req() req, @Res({ passthrough: true }) res) {
+    const userId = req.user.userId;
+
+    // Remove the refresh token from DB
+    await this.authService.logout(userId);
+
+    // Clear the cookie
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // true in production
+      path: '/',
+    });
+
+    return { message: 'Logged out successfully' };
   }
 }

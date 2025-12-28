@@ -107,16 +107,18 @@ export class UserService {
       if (existingUser && existingUser.id !== id) {
         throw new ConflictException('Email already exists');
       }
+      user.refreshToken = null;
       user.email = updateUserDto.email;
     }
 
     // Only set password if provided
     if (updateUserDto.password) {
       const hashedPassword = await this.hashPassword(updateUserDto.password);
+      user.refreshToken = null;
       user.password = hashedPassword;
     }
 
-    if (updateUserDto.refreshToken) {
+    if (updateUserDto.refreshToken || updateUserDto.refreshToken === null) {
       user.refreshToken = updateUserDto.refreshToken;
     }
 
