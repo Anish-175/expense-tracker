@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { CreateUserDto } from 'src/user/dto';
 import { UserService } from 'src/user/user.service';
 
@@ -80,6 +81,40 @@ export class AuthService {
     return user.id;
   }
 
+  //Logout: Remove refresh token from database
+  async logout(userId: number) {
+    await this.userService.update(userId, { refreshToken: null });
+  }
+
+  // auth/auth.service.ts
+  async validateGoogleUser(profile: any): Promise<number> {
+    const email = profile.emails?.[0]?.value;
+    const name = profile.displayName;
+
+    if (!email) {
+      throw new UnauthorizedException('Google account has no email');
+    }
+
+    let user = await this.userService.findUserByEmail(email);
+    if (!user) {
+      const randomPassword = randomBytes(32).toString('hex');
+      const hashedPassword = await hash(randomPassword, 10);
+
+      await this.userService.createUser({
+        email,
+        name,
+        password: hashedPassword,
+      });
+    }
+
+    const googleUser = await this.userService.findUserByEmail(email);
+    if (!googleUser) {
+      throw new UnauthorizedException('Google account not found');
+    }
+
+    return googleUser.id;
+  }
+
   //helper method to generate access and refresh token and save refresh token to database
   async issueTokens(
     userId: number,
@@ -103,10 +138,4 @@ export class AuthService {
 
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
-
-  async logout(userId: number) {
-    await this.userService.update(userId, { refreshToken: null });
-}
-
-  
 }

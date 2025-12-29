@@ -7,6 +7,7 @@ import { User } from 'src/user/entities/user.entity';
 import { UserModule } from 'src/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { GoogleAuthStrategy } from './strategies/google.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt.refresh.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
@@ -19,7 +20,13 @@ import { LocalStrategy } from './strategies/local.strategy';
     JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    GoogleAuthStrategy,
+  ],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
