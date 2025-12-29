@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from 'src/user/dto';
@@ -63,7 +63,7 @@ export class AuthController {
     await this.authService.logout(userId);
 
     // Clear the cookie
-    res.clearCookie('refresh_token', {
+    res.clearCookie('refreshToken', {
       httpOnly: true,
       sameSite: 'lax',
       secure: false, // true in production
@@ -71,5 +71,29 @@ export class AuthController {
     });
 
     return { message: 'Logged out successfully' };
+  }
+
+  // Step 1: Google login
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin() {}
+
+  // Step 2: Google callback
+  @Get('google/redirect')
+  @UseGuards(AuthGuard('google'))
+  async googleRedirect(@Req() req, @Res({ passthrough: true }) res) {
+    const { userId } = req.user;
+
+    const { accessToken, refreshToken } =
+      await this.authService.login(userId);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // true in prod
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { accessToken };
   }
 }
